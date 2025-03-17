@@ -1,0 +1,25 @@
+name: CI checks
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - base
+  pull_request:
+
+jobs:
+  ci:
+    name: "Code checks"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          shopt -s globstar
+          clang-format --dry-run --Werror -style=file -assume-filename=.clang-format **/*.c
+      - run: mvn spotless:check
+      # TODO: test other submodules
+      - run: mvn clean test -pl adapter
+
