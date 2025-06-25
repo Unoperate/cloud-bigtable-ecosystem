@@ -579,12 +579,12 @@ public class BigtableSinkTaskTest {
       doReturn(rowKey).when(keyMapper).getKey(any());
       doAnswer(
               i -> {
-                MutationDataBuilder builder = new MutationDataBuilder();
+                MutationDataBuilder builder = new MutationDataBuilder(0);
                 builder.deleteRow();
                 return builder;
               })
           .when(valueMapper)
-          .getRecordMutationDataBuilder(any(), anyString(), anyLong());
+          .getRecordMutationDataBuilder(any(), anyString(), any(), anyLong());
 
       Batcher<RowMutationEntry, Void> batcher = mock(Batcher.class);
       doReturn(completedApiFuture(null)).when(batcher).add(any());
@@ -615,6 +615,9 @@ public class BigtableSinkTaskTest {
       reset(schemaManager);
     }
   }
+
+  // TODO(prawilny): add all the tests for the new mode (putBranches, replaceRows,
+  // performReplaceBatch)
 
   private static class TestBigtableSinkTask extends BigtableSinkTask {
 

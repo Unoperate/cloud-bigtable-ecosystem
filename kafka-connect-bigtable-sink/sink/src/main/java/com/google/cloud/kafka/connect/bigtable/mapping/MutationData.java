@@ -29,16 +29,19 @@ public class MutationData {
   private final ByteString rowKey;
   private final Mutation mutation;
   private final Set<String> requiredColumnFamilies;
+  private final long timestampMicros;
 
   public MutationData(
       String targetTable,
       ByteString rowKey,
       Mutation mutation,
-      Set<String> requiredColumnFamilies) {
+      Set<String> requiredColumnFamilies,
+      long timestampMicros) {
     this.targetTable = targetTable;
     this.rowKey = rowKey;
     this.mutation = mutation;
     this.requiredColumnFamilies = requiredColumnFamilies;
+    this.timestampMicros = timestampMicros;
   }
 
   public String getTargetTable() {
@@ -49,11 +52,20 @@ public class MutationData {
     return rowKey;
   }
 
+  public long getTimestampMicros() {
+    return this.timestampMicros;
+  }
+
   public RowMutationEntry getUpsertMutation() {
     return RowMutationEntry.createFromMutationUnsafe(this.rowKey, this.mutation);
   }
 
   public Mutation getInsertMutation() {
+    return mutation;
+  }
+
+  public Mutation getReplaceMutation() {
+    // TODO(prawilny): ensure that DeleteRow is first in the message...
     return mutation;
   }
 

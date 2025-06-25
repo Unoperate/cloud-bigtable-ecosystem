@@ -40,6 +40,7 @@ import com.google.cloud.kafka.connect.bigtable.version.PackageMetadata;
 import com.google.cloud.kafka.connect.bigtable.wrappers.BigtableTableAdminClientInterface;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -185,6 +187,9 @@ public class BigtableSinkTask extends SinkTask {
       case UPSERT:
         upsertRows(mutations, perRecordResults);
         break;
+      case REPLACE_IF_NEWEST:
+        replaceRows(mutations, perRecordResults);
+        break;
     }
     handleResults(perRecordResults);
   }
@@ -232,9 +237,10 @@ public class BigtableSinkTask extends SinkTask {
           "The record's key converts into an illegal empty Cloud Bigtable row key.");
     }
     SchemaAndValue kafkaValue = new SchemaAndValue(record.valueSchema(), record.value());
-    long timestamp = getTimestampMicros(record);
+    long timestampMicros = getTimestampMicros(record);
     MutationDataBuilder mutationDataBuilder =
-        valueMapper.getRecordMutationDataBuilder(kafkaValue, record.topic(), timestamp);
+        valueMapper.getRecordMutationDataBuilder(
+            kafkaValue, record.topic(), config.getInsertMode(), timestampMicros);
 
     return mutationDataBuilder.maybeBuild(recordTableId, rowKey);
   }
@@ -271,7 +277,7 @@ public class BigtableSinkTask extends SinkTask {
       logger.debug("Used wall clock for a record missing timestamp.");
       timestampMillis = System.currentTimeMillis();
     }
-    return 1000 * timestampMillis;
+    return TimeUnit.MILLISECONDS.toMicros(timestampMillis);
   }
 
   /**
@@ -439,6 +445,53 @@ public class BigtableSinkTask extends SinkTask {
       // We must flush the batchers to respect CONFIG_MAX_BATCH_SIZE.
       // We flush asynchronously and await the results instead.
       batcher.sendOutstanding();
+    }
+  }
+
+  // TODO(prawilny): reduce the copypaste
+  @VisibleForTesting
+  void replaceRows(
+      Map<SinkRecord, MutationData> mutations, Map<SinkRecord, Future<Void>> perRecordResults) {
+    List<Map.Entry<SinkRecord, MutationData>> mutationsToApply =
+        new ArrayList<>(mutations.entrySet());
+    int maxBatchSize = config.getInt(BigtableSinkTaskConfig.MAX_BATCH_SIZE_CONFIG);
+    List<List<Map.Entry<SinkRecord, MutationData>>> batches =
+        Lists.partition(mutationsToApply, maxBatchSize);
+
+    for (List<Map.Entry<SinkRecord, MutationData>> batch : batches) {
+      performReplaceBatch(batch, perRecordResults);
+    }
+  }
+
+  // TODO(prawilny): reduce the copypaste
+  @VisibleForTesting
+  void performReplaceBatch(
+      List<Map.Entry<SinkRecord, MutationData>> batch,
+      Map<SinkRecord, Future<Void>> perRecordResults) {
+    logger.trace("replaceBatch(#records={})", batch.size());
+
+    for (Map.Entry<SinkRecord, MutationData> recordEntry : batch) {
+      SinkRecord record = recordEntry.getKey();
+      MutationData recordMutationData = recordEntry.getValue();
+      String recordTableName = recordMutationData.getTargetTable();
+
+      Filters.TimestampRangeFilter timestampRange =
+          Filters.FILTERS
+              .timestamp()
+              .range()
+              .startOpen(recordMutationData.getTimestampMicros())
+              .endUnbounded();
+      ConditionalRowMutation crm =
+          ConditionalRowMutation.create(recordTableName, recordMutationData.getRowKey())
+              .condition(timestampRange)
+              .otherwise(recordMutationData.getReplaceMutation());
+
+      ApiFuture<Boolean> result = bigtableData.checkAndMutateRowAsync(crm);
+      // We don't care if the row was really written, the only interesting aspect is whether it
+      // failed.
+      ApiFuture<Void> resultIgnoringSuccess =
+          ApiFutures.transform(result, x -> null, MoreExecutors.directExecutor());
+      perRecordResults.put(record, resultIgnoringSuccess);
     }
   }
 

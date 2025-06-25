@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.cloud.bigtable.data.v2.models.Range;
 import com.google.cloud.kafka.connect.bigtable.config.ConfigInterpolation;
+import com.google.cloud.kafka.connect.bigtable.config.InsertMode;
 import com.google.cloud.kafka.connect.bigtable.config.NullValueMode;
 import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
@@ -271,7 +272,8 @@ public class ValueMapperTest {
     String topic = "TOPIC";
     String value = "value";
     ValueMapper mapper = new TestValueMapper("${topic}", DEFAULT_COLUMN, NullValueMode.WRITE);
-    MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value, topic);
+    MutationDataBuilder mutationDataBuilder =
+        getRecordMutationDataBuilder(mapper, value, topic, InsertMode.INSERT);
     verify(mutationDataBuilder, times(1))
         .setCell(
             topic,
@@ -814,16 +816,18 @@ public class ValueMapperTest {
   }
 
   private MutationDataBuilder getRecordMutationDataBuilder(ValueMapper mapper, Object kafkaValue) {
-    return getRecordMutationDataBuilder(mapper, kafkaValue, DEFAULT_TOPIC);
+    return getRecordMutationDataBuilder(mapper, kafkaValue, DEFAULT_TOPIC, InsertMode.UPSERT);
   }
 
   private MutationDataBuilder getRecordMutationDataBuilder(
-      ValueMapper mapper, Object kafkaValue, String topic) {
+      ValueMapper mapper, Object kafkaValue, String topic, InsertMode insertMode) {
     // We use `null` in this test since our code for now uses  Schema only to warn the user when an
     // unsupported logical type is encountered.
     SchemaAndValue schemaAndValue = new SchemaAndValue(null, kafkaValue);
-    return mapper.getRecordMutationDataBuilder(schemaAndValue, topic, TIMESTAMP);
+    return mapper.getRecordMutationDataBuilder(schemaAndValue, topic, insertMode, TIMESTAMP);
   }
+
+  // TODO(prawilny): add InsertMode::REPLACE_IF_NEWEST test
 
   private static class TestValueMapper extends ValueMapper {
 
@@ -833,8 +837,9 @@ public class ValueMapperTest {
     }
 
     @Override
-    protected MutationDataBuilder createMutationDataBuilder() {
-      return spy(super.createMutationDataBuilder());
+    protected MutationDataBuilder createMutationDataBuilder(
+        InsertMode insertMode, long timestampMicros) {
+      return spy(super.createMutationDataBuilder(insertMode, timestampMicros));
     }
   }
 }

@@ -23,8 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.google.cloud.bigtable.data.v2.models.Mutation;
 import com.google.cloud.bigtable.data.v2.models.Range;
 import com.google.cloud.kafka.connect.bigtable.config.ConfigInterpolation;
+import com.google.cloud.kafka.connect.bigtable.config.InsertMode;
 import com.google.cloud.kafka.connect.bigtable.config.NullValueMode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
@@ -90,11 +92,15 @@ public class ValueMapper {
    * @param timestampMicros The timestamp the mutations will be created at in microseconds.
    */
   public MutationDataBuilder getRecordMutationDataBuilder(
-      SchemaAndValue kafkaValueAndSchema, String topic, long timestampMicros) {
+      SchemaAndValue kafkaValueAndSchema,
+      String topic,
+      InsertMode insertMode,
+      long timestampMicros) {
     Object rootKafkaValue = kafkaValueAndSchema.value();
     Optional<Schema> rootKafkaSchema = Optional.ofNullable(kafkaValueAndSchema.schema());
     logIfLogicalTypeUnsupported(rootKafkaSchema);
-    MutationDataBuilder mutationDataBuilder = createMutationDataBuilder();
+    MutationDataBuilder mutationDataBuilder =
+        createMutationDataBuilder(insertMode, timestampMicros);
     if (rootKafkaValue == null && nullMode == NullValueMode.IGNORE) {
       // Do nothing
     } else if (rootKafkaValue == null && nullMode == NullValueMode.DELETE) {
@@ -157,9 +163,13 @@ public class ValueMapper {
   }
 
   @VisibleForTesting
-  // Method only needed for use in tests. It could be inlined otherwise.
-  protected MutationDataBuilder createMutationDataBuilder() {
-    return new MutationDataBuilder();
+  protected MutationDataBuilder createMutationDataBuilder(
+      InsertMode insertMode, long timestampMicros) {
+    Mutation mutation = Mutation.create();
+    if (insertMode == InsertMode.REPLACE_IF_NEWEST) {
+      mutation.deleteRow();
+    }
+    return new MutationDataBuilder(mutation, timestampMicros);
   }
 
   protected String getDefaultColumnFamily(String topic) {

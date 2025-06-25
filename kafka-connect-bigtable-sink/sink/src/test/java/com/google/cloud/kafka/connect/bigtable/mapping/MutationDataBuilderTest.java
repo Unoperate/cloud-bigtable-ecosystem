@@ -50,7 +50,7 @@ public class MutationDataBuilderTest {
   @Before
   public void setUp() {
     mutation = Mutation.create();
-    mutationDataBuilder = new MutationDataBuilder(mutation);
+    mutationDataBuilder = new MutationDataBuilder(mutation, 0);
   }
 
   @Test
