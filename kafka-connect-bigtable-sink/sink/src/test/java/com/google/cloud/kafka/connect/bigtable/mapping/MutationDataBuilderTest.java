@@ -50,7 +50,7 @@ public class MutationDataBuilderTest {
   @Before
   public void setUp() {
     mutation = Mutation.create();
-    mutationDataBuilder = new MutationDataBuilder(mutation);
+    mutationDataBuilder = new MutationDataBuilder(mutation, 0);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class MutationDataBuilderTest {
 
   @Test
   public void testSetCell() {
-    mutationDataBuilder.setCell(COLUMN_FAMILY, COLUMN_QUALIFIER, TIMESTAMP, VALUE);
+    mutationDataBuilder.setCell(COLUMN_FAMILY, COLUMN_QUALIFIER, VALUE);
 
     Optional<MutationData> mutationData =
         mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
