@@ -51,10 +51,13 @@ import org.junit.runners.JUnit4;
 public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
   private static final String KEY1 = "key1";
   private static final String KEY2 = "key2";
+  private static final String KEY3 = "key2";
   private static final ByteString KEY1_BYTES =
       ByteString.copyFrom(KEY1.getBytes(StandardCharsets.UTF_8));
   private static final ByteString KEY2_BYTES =
       ByteString.copyFrom(KEY2.getBytes(StandardCharsets.UTF_8));
+  private static final ByteString KEY3_BYTES =
+          ByteString.copyFrom(KEY2.getBytes(StandardCharsets.UTF_8));
   private static final String VALUE1 = "value1";
   private static final String VALUE2 = "value2";
   private static final String VALUE3 = "value3";
@@ -130,9 +133,8 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
     Map<String, String> props = baseConnectorProps();
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
-    // TODO: this comment is stupid, we should just use different schemas.
-    // We need to ignore `null`s to ensure that it's `InsertMode.REPLACE_IF_NEWEST`'s behavior
-    // rather than `NullValueMode.DELETE`'s or `NullValueMode.WRITE`'s.
+    // Let's ignore `null`s to ensure that it's `InsertMode.REPLACE_IF_NEWEST`'s behavior
+    // rather than `NullValueMode.DELETE`'s.
     props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.IGNORE.name());
 
     String testId = startSingleTopicConnector(props);
@@ -140,23 +142,29 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
 
     String field1 = "f1";
     String field2 = "f2";
-    Schema schema =
-        SchemaBuilder.struct()
-            .field(field1, Schema.OPTIONAL_STRING_SCHEMA)
-            .field(field2, Schema.OPTIONAL_STRING_SCHEMA)
-            .build();
-    Struct value1 = new Struct(schema).put(field1, VALUE1);
-    Struct value2 = new Struct(schema).put(field2, VALUE2);
 
-    SchemaAndValue schemaAndValue1 = new SchemaAndValue(schema, value1);
-    SchemaAndValue schemaAndValue2 = new SchemaAndValue(schema, value2);
+    Schema schema1 =
+        SchemaBuilder.struct()
+            .field(field1, Schema.STRING_SCHEMA)
+            .build();
+    Schema schema2 =
+            SchemaBuilder.struct()
+                    .field(field2, Schema.STRING_SCHEMA)
+                    .build();
+
+    Struct value1 = new Struct(schema1).put(field1, VALUE1);
+    Struct value2 = new Struct(schema2).put(field2, VALUE2);
+
+    SchemaAndValue schemaAndValue1 = new SchemaAndValue(schema1, value1);
+    SchemaAndValue schemaAndValue2 = new SchemaAndValue(schema2, value2);
 
     SchemaAndValue schemaAndKey1 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY1);
     SchemaAndValue schemaAndKey2 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY2);
-    SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, "key3");
+    SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY3);
 
-    long baseTimestamp = 10000;
-    // Set initial values of the cells.
+    long preexistingRowsTimestamp = 10000L;
+
+    // Set initial values of the preexisting rows.
     sendRecords(
         testId,
         List.of(
@@ -164,40 +172,42 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
             new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, schemaAndValue1)),
         keyConverter,
         valueConverter,
-        baseTimestamp);
+        preexistingRowsTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 2);
+
     // Successfully try to replace a record using the same timestamp.
     sendRecords(
         testId,
         List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, schemaAndValue2)),
         keyConverter,
         valueConverter,
-        baseTimestamp);
+        preexistingRowsTimestamp);
     // Unsuccessfully try to replace a record using an earlier timestamp.
     sendRecords(
         testId,
         List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, schemaAndValue2)),
         keyConverter,
         valueConverter,
-        baseTimestamp - 1000L);
-    // TODO(prawilny): polish this comment?
-    // Send anything so that we can know that all the records have been processed once there are 3
-    // records in Bigtable.
+        preexistingRowsTimestamp - 1L);
+    // Test writing to a row that didn't exist before.
     sendRecords(
         testId,
         List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, schemaAndValue1)),
         keyConverter,
         valueConverter,
-        baseTimestamp);
+        0L);
     waitUntilBigtableContainsNumberOfRows(testId, 3);
 
     Map<ByteString, Row> rows = readAllRows(bigtableData, testId);
     Row row1 = rows.get(KEY1_BYTES);
     Row row2 = rows.get(KEY2_BYTES);
+    Row row3 = rows.get(KEY3_BYTES);
     assertEquals(1, row1.getCells().size());
     assertEquals(VALUE2_BYTES, row1.getCells().get(0).getValue());
     assertEquals(1, row2.getCells().size());
     assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
+    assertEquals(1, row3.getCells().size());
+    assertEquals(VALUE1_BYTES, row3.getCells().get(0).getValue());
     assertConnectorAndAllTasksAreRunning(testId);
   }
 }
