@@ -51,7 +51,7 @@ import org.junit.runners.JUnit4;
 public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
   private static final String KEY1 = "key1";
   private static final String KEY2 = "key2";
-  private static final String KEY3 = "key2";
+  private static final String KEY3 = "key3";
   private static final ByteString KEY1_BYTES =
       ByteString.copyFrom(KEY1.getBytes(StandardCharsets.UTF_8));
   private static final ByteString KEY2_BYTES =
