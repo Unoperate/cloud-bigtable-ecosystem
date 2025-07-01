@@ -116,6 +116,7 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
     assertConnectorAndAllTasksAreRunning(testId);
   }
 
+  // TODO: test deletes too
   @Test
   public void testReplace()
       throws InterruptedException, ExecutionException, JsonProcessingException {
@@ -135,6 +136,7 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
     }
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
+    // TODO: this comment is stupid, we should just use different schemas.
     // We need to ignore `null`s to ensure that it's `InsertMode.REPLACE_IF_NEWEST`'s behavior
     // rather than `NullValueMode.DELETE`'s or `NullValueMode.WRITE`'s.
     props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.IGNORE.name());
