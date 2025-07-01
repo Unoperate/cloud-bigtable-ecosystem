@@ -24,6 +24,7 @@ import com.google.cloud.kafka.connect.bigtable.config.BigtableErrorMode;
 import com.google.cloud.kafka.connect.bigtable.config.BigtableSinkConfig;
 import com.google.cloud.kafka.connect.bigtable.config.InsertMode;
 import com.google.cloud.kafka.connect.bigtable.config.NullValueMode;
+import com.google.cloud.kafka.connect.bigtable.util.JsonConverterFactory;
 import com.google.protobuf.ByteString;
 import io.confluent.connect.avro.AvroConverter;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
@@ -38,6 +39,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.runtime.ConnectorConfig;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.StringConverter;
@@ -116,24 +118,16 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
     assertConnectorAndAllTasksAreRunning(testId);
   }
 
-  // TODO: test deletes too
   @Test
-  public void testReplace()
-      throws InterruptedException, ExecutionException, JsonProcessingException {
+  public void testReplaceIfNewestWrites()
+      throws InterruptedException, ExecutionException {
     // We want to test that replace works as intended, i.e., that it removes all the previously
     // present cells, which are not in the new record. Thus, we need to write to different
     // cells. JsonConverter doesn't allow for that, so we need to use a different value converter.
-    Map<String, String> valueConverterProps =
-        Map.of(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testReplace");
     Converter keyConverter = new StringConverter();
-    Converter valueConverter = new AvroConverter();
-    valueConverter.configure(valueConverterProps, false);
+    Converter valueConverter = JsonConverterFactory.create(true, false);
 
     Map<String, String> props = baseConnectorProps();
-    for (Map.Entry<String, String> prop : valueConverterProps.entrySet()) {
-      props.put(
-          ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG + "." + prop.getKey(), prop.getValue());
-    }
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
     // TODO: this comment is stupid, we should just use different schemas.
