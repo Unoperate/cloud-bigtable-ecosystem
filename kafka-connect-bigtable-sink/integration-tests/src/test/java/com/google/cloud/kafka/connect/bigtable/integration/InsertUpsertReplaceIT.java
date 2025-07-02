@@ -17,7 +17,6 @@ package com.google.cloud.kafka.connect.bigtable.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.cloud.kafka.connect.bigtable.config.BigtableErrorMode;
@@ -26,8 +25,6 @@ import com.google.cloud.kafka.connect.bigtable.config.InsertMode;
 import com.google.cloud.kafka.connect.bigtable.config.NullValueMode;
 import com.google.cloud.kafka.connect.bigtable.util.JsonConverterFactory;
 import com.google.protobuf.ByteString;
-import io.confluent.connect.avro.AvroConverter;
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.List;
@@ -39,7 +36,6 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.runtime.ConnectorConfig;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.StringConverter;
@@ -124,9 +120,6 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
   @Test
   public void testReplaceIfNewestWrites()
       throws InterruptedException, ExecutionException {
-    // We want to test that replace works as intended, i.e., that it removes all the previously
-    // present cells, which are not in the new record. Thus, we need to write to different
-    // cells. JsonConverter doesn't allow for that, so we need to use a different value converter.
     Converter keyConverter = new StringConverter();
     Converter valueConverter = JsonConverterFactory.create(true, false);
 
@@ -197,6 +190,7 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
         valueConverter,
         0L);
     waitUntilBigtableContainsNumberOfRows(testId, 3);
+    assertConnectorAndAllTasksAreRunning(testId);
 
     Map<ByteString, Row> rows = readAllRows(bigtableData, testId);
     Row row1 = rows.get(KEY1_BYTES);
@@ -208,6 +202,69 @@ public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
     assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
     assertEquals(1, row3.getCells().size());
     assertEquals(VALUE1_BYTES, row3.getCells().get(0).getValue());
+  }
+
+  @Test
+  public void testReplaceIfNewestDeletes()
+          throws InterruptedException, ExecutionException {
+    Converter keyConverter = new StringConverter();
+    Converter valueConverter = new StringConverter();
+
+    Map<String, String> props = baseConnectorProps();
+    props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
+    props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
+    props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.DELETE.name());
+
+    String testId = startSingleTopicConnector(props);
+    createTablesAndColumnFamilies(testId);
+
+    SchemaAndValue writeSchemaAndValue = new SchemaAndValue(Schema.STRING_SCHEMA, VALUE1);
+    SchemaAndValue deleteSchemaAndValue = new SchemaAndValue(Schema.OPTIONAL_STRING_SCHEMA, null);
+
+    SchemaAndValue schemaAndKey1 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY1);
+    SchemaAndValue schemaAndKey2 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY2);
+    SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY3);
+
+    long preexistingRowsTimestamp = 10000L;
+
+    // Set initial values of the preexisting rows.
+    sendRecords(
+            testId,
+            List.of(
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue)),
+            keyConverter,
+            valueConverter,
+            preexistingRowsTimestamp);
+    waitUntilBigtableContainsNumberOfRows(testId, 2);
+
+    // Test deleting a row that didn't exist before.
+    sendRecords(
+            testId,
+            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue)),
+            keyConverter,
+            valueConverter,
+            0L);
+    // Unsuccessfully try to delete a row using an earlier timestamp.
+    sendRecords(
+            testId,
+            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue)),
+            keyConverter,
+            valueConverter,
+            preexistingRowsTimestamp - 1L);
+    // Successfully try to delete a row using the same timestamp.
+    sendRecords(
+            testId,
+            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue)),
+            keyConverter,
+            valueConverter,
+            preexistingRowsTimestamp);
+    waitUntilBigtableContainsNumberOfRows(testId, 1);
     assertConnectorAndAllTasksAreRunning(testId);
+
+    Map<ByteString, Row> rows = readAllRows(bigtableData, testId);
+    Row row2 = rows.get(KEY2_BYTES);
+    assertEquals(1, row2.getCells().size());
+    assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
   }
 }
