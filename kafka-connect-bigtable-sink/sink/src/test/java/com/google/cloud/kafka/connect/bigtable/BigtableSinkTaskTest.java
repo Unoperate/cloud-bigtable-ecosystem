@@ -603,30 +603,42 @@ public class BigtableSinkTaskTest {
     assertThrows(ExecutionException.class, () -> output.get(exceptionRecord).get());
   }
 
-  // TODO(prawilny): add replace_if_newest to this test
+  private static class PutBranchesTestCase {
+    public final boolean autoCreateTables;
+    public final boolean autoCreateColumnFamilies;
+    public final InsertMode insertMode;
+
+    public PutBranchesTestCase(boolean autoCreateTables, boolean autoCreateColumnFamilies, InsertMode insertMode) {
+      this.autoCreateTables = autoCreateTables;
+      this.autoCreateColumnFamilies = autoCreateColumnFamilies;
+      this.insertMode = insertMode;
+    }
+  }
+
   @Test
   public void testPutBranches() {
     SinkRecord record1 = new SinkRecord("table1", 1, null, null, null, null, 1);
     SinkRecord record2 = new SinkRecord("table2", 1, null, null, null, null, 2);
 
-    for (List<Boolean> test :
+    for (PutBranchesTestCase testCase :
         List.of(
-            List.of(false, false, false),
-            List.of(false, false, true),
-            List.of(false, true, false),
-            List.of(false, true, true),
-            List.of(true, false, false),
-            List.of(true, false, true),
-            List.of(true, true, false),
-            List.of(true, true, true))) {
-      boolean autoCreateTables = test.get(0);
-      boolean autoCreateColumnFamilies = test.get(1);
-      boolean useInsertMode = test.get(2);
-
+                new PutBranchesTestCase(false, false, InsertMode.INSERT),
+                new PutBranchesTestCase(false, true, InsertMode.INSERT),
+                new PutBranchesTestCase(true, false, InsertMode.INSERT),
+                new PutBranchesTestCase(true, true, InsertMode.INSERT),
+                new PutBranchesTestCase(false, false, InsertMode.UPSERT),
+                new PutBranchesTestCase(false, true, InsertMode.UPSERT),
+                new PutBranchesTestCase(true, false, InsertMode.UPSERT),
+                new PutBranchesTestCase(true, true, InsertMode.UPSERT),
+                new PutBranchesTestCase(false, false, InsertMode.REPLACE_IF_NEWEST),
+                new PutBranchesTestCase(false, true, InsertMode.REPLACE_IF_NEWEST),
+                new PutBranchesTestCase(true, false, InsertMode.REPLACE_IF_NEWEST),
+                new PutBranchesTestCase(true, true, InsertMode.REPLACE_IF_NEWEST)
+            )) {
       Map<String, String> props = BasicPropertiesFactory.getTaskProps();
-      props.put(AUTO_CREATE_TABLES_CONFIG, Boolean.toString(autoCreateTables));
-      props.put(AUTO_CREATE_COLUMN_FAMILIES_CONFIG, Boolean.toString(autoCreateColumnFamilies));
-      props.put(INSERT_MODE_CONFIG, (useInsertMode ? InsertMode.INSERT : InsertMode.UPSERT).name());
+      props.put(AUTO_CREATE_TABLES_CONFIG, Boolean.toString(testCase.autoCreateTables));
+      props.put(AUTO_CREATE_COLUMN_FAMILIES_CONFIG, Boolean.toString(testCase.autoCreateColumnFamilies));
+      props.put(INSERT_MODE_CONFIG, testCase.insertMode.name());
       config = new BigtableSinkTaskConfig(props);
 
       byte[] rowKey = "rowKey".getBytes(StandardCharsets.UTF_8);
@@ -643,6 +655,7 @@ public class BigtableSinkTaskTest {
       Batcher<RowMutationEntry, Void> batcher = mock(Batcher.class);
       doReturn(completedApiFuture(null)).when(batcher).add(any());
       doReturn(batcher).when(bigtableData).newBulkMutationBatcher(anyString());
+      doReturn(completedApiFuture(true)).when(bigtableData).checkAndMutateRowAsync(any());
       doReturn(new ResourceCreationResult(Collections.emptySet(), Collections.emptySet()))
           .when(schemaManager)
           .ensureTablesExist(any());
@@ -658,11 +671,12 @@ public class BigtableSinkTaskTest {
       task.put(List.of(record1, record2));
 
       verify(task, times(1)).prepareRecords(any());
-      verify(schemaManager, times(autoCreateTables ? 1 : 0)).ensureTablesExist(any());
-      verify(schemaManager, times(autoCreateColumnFamilies ? 1 : 0))
+      verify(schemaManager, times(testCase.autoCreateTables ? 1 : 0)).ensureTablesExist(any());
+      verify(schemaManager, times(testCase.autoCreateColumnFamilies ? 1 : 0))
           .ensureColumnFamiliesExist(any());
-      verify(task, times(useInsertMode ? 1 : 0)).insertRows(any(), any());
-      verify(task, times(useInsertMode ? 0 : 1)).upsertRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.INSERT ? 1 : 0)).insertRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.UPSERT ? 1 : 0)).upsertRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.REPLACE_IF_NEWEST ? 1 : 0)).replaceRows(any(), any());
       verify(task, times(1)).handleResults(any());
 
       reset(task);
