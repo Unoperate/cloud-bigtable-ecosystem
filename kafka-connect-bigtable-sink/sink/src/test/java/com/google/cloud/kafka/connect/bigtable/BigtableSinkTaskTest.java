@@ -27,20 +27,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.google.api.gax.batching.Batcher;
@@ -548,6 +535,37 @@ public class BigtableSinkTaskTest {
 
     output.get(okRecord).get();
     assertThrows(ExecutionException.class, () -> output.get(errorRecord).get());
+  }
+
+  @Test
+  public void testReplaceRows() {
+    Map<String, String> props = BasicPropertiesFactory.getTaskProps();
+    int maxBatchSize = 3;
+    int totalRecords = 1000;
+    props.put(BigtableSinkTaskConfig.MAX_BATCH_SIZE_CONFIG, Integer.toString(maxBatchSize));
+    BigtableSinkTaskConfig config = new BigtableSinkTaskConfig(props);
+
+    task = spy(new TestBigtableSinkTask(config, null, null, null, null, null, null));
+    MutationData commonMutationData = mock(MutationData.class);
+    doNothing().when(task).performReplaceBatch(any(), any());
+
+    Map<SinkRecord, MutationData> input =
+            IntStream.range(0, totalRecords)
+                    .mapToObj(i -> new SinkRecord("", 1, null, null, null, null, i))
+                    .collect(Collectors.toMap(i -> i, ignored -> commonMutationData));
+
+    Map<SinkRecord, Future<Void>> fakeMutationData = mock(Map.class);
+    task.replaceRows(input, fakeMutationData);
+
+    int expectedFullBatches = totalRecords / maxBatchSize;
+    int expectedPartialBatches = totalRecords % maxBatchSize == 0 ? 0 : 1;
+    int replaceRowsCalls = 1;
+
+    verify(task, times(expectedFullBatches))
+            .performReplaceBatch(argThat(v -> v.size() == maxBatchSize), any());
+    verify(task, times(expectedPartialBatches))
+            .performReplaceBatch(argThat(v -> v.size() != maxBatchSize), any());
+    assertTotalNumberOfInvocations(task, expectedFullBatches + expectedPartialBatches + replaceRowsCalls);
   }
 
   @Test

@@ -448,7 +448,13 @@ public class BigtableSinkTask extends SinkTask {
     }
   }
 
-  // TODO(prawilny): reduce the copypaste
+  // TODO(prawilny): reduce the copypaste?
+  /**
+   * Applies the mutations replacing the rows which contained no cells fresher than respective mutations.
+   *
+   * @param mutations Mutations to be applied.
+   * @param perRecordResults {@link Map} the per-record results will be written to.
+   */
   @VisibleForTesting
   void replaceRows(
       Map<SinkRecord, MutationData> mutations, Map<SinkRecord, Future<Void>> perRecordResults) {
@@ -463,7 +469,13 @@ public class BigtableSinkTask extends SinkTask {
     }
   }
 
-  // TODO(prawilny): reduce the copypaste
+  // TODO(prawilny): reduce the copypaste?
+  /**
+   * Applies a single mutation batch using replace-if-newest logic.
+   *
+   * @param batch Batch of mutations to be applied.
+   * @param perRecordResults A {@link Map} the per-record results will be written to.
+   */
   @VisibleForTesting
   void performReplaceBatch(
       List<Map.Entry<SinkRecord, MutationData>> batch,
