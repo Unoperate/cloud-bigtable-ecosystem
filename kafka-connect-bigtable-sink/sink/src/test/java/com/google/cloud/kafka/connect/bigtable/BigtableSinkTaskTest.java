@@ -21,6 +21,7 @@ import static com.google.cloud.kafka.connect.bigtable.config.BigtableSinkConfig.
 import static com.google.cloud.kafka.connect.bigtable.config.BigtableSinkConfig.INSERT_MODE_CONFIG;
 import static com.google.cloud.kafka.connect.bigtable.config.BigtableSinkConfig.TABLE_NAME_FORMAT_CONFIG;
 import static com.google.cloud.kafka.connect.bigtable.util.FutureUtil.completedApiFuture;
+import static com.google.cloud.kafka.connect.bigtable.util.FutureUtil.failedApiFuture;
 import static com.google.cloud.kafka.connect.bigtable.util.MockUtil.assertTotalNumberOfInvocations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -569,6 +570,41 @@ public class BigtableSinkTaskTest {
   }
 
   @Test
+  public void testPerformReplaceBatch() throws ExecutionException, InterruptedException {
+    ApiException exception = ApiExceptionFactory.create();
+    doReturn(completedApiFuture(false)).doReturn(completedApiFuture(true)).doReturn(failedApiFuture(exception)).when(bigtableData).checkAndMutateRowAsync(any());
+    task = new TestBigtableSinkTask(null, bigtableData, null, null, null, null, null);
+
+    SinkRecord falseRecord = new SinkRecord("", 1, null, null, null, null, 1);
+    SinkRecord trueRecord = new SinkRecord("", 1, null, null, null, null, 2);
+    SinkRecord exceptionRecord = new SinkRecord("", 1, null, null, null, null, 3);
+
+    MutationData commonMutationData = mock(MutationData.class);
+    doReturn("ignored").when(commonMutationData).getTargetTable();
+    doReturn(ByteString.copyFrom("ignored".getBytes(StandardCharsets.UTF_8)))
+            .when(commonMutationData)
+            .getRowKey();
+    doReturn(0L)
+            .when(commonMutationData)
+            .getTimestampMicros();
+    doReturn(Mutation.create()).when(commonMutationData).getReplaceMutation();
+
+    // LinkedHashMap, because we mock consecutive return values of Bigtable client mock and thus
+    // rely on the order.
+    Map<SinkRecord, MutationData> input = new LinkedHashMap<>();
+    input.put(falseRecord, commonMutationData);
+    input.put(trueRecord, commonMutationData);
+    input.put(exceptionRecord, commonMutationData);
+
+    Map<SinkRecord, Future<Void>> output = new HashMap<>();
+    task.performReplaceBatch(new ArrayList<>(input.entrySet()), output);
+    output.get(falseRecord).get();
+    output.get(trueRecord).get();
+    assertThrows(ExecutionException.class, () -> output.get(exceptionRecord).get());
+  }
+
+  // TODO(prawilny): add replace_if_newest to this test
+  @Test
   public void testPutBranches() {
     SinkRecord record1 = new SinkRecord("table1", 1, null, null, null, null, 1);
     SinkRecord record2 = new SinkRecord("table2", 1, null, null, null, null, 2);
@@ -633,9 +669,6 @@ public class BigtableSinkTaskTest {
       reset(schemaManager);
     }
   }
-
-  // TODO(prawilny): add all the tests for the new mode (putBranches, replaceRows,
-  // performReplaceBatch)
 
   private static class TestBigtableSinkTask extends BigtableSinkTask {
 
