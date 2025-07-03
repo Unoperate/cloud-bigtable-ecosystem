@@ -162,12 +162,10 @@ public class ValueMapper {
   protected MutationDataBuilder createMutationDataBuilder(
       InsertMode insertMode, long timestampMicros) {
     MutationDataBuilder builder = new MutationDataBuilder(timestampMicros);
-    // Note that we call the method on the builder instead of passing it a set up mutation via a
-    // constructor.
-    // This way we ensure that even for an empty (empty Struct, `null` when the mapper is configured
-    // to ignore nulls)
-    // input value, the row is deleted, which is needed for cleaner semantics of the
-    // REPLACE_IF_NEWEST mode.
+    // Note that we call the method on the builder instead of passing it a set up mutation via
+    // a constructor. This way we ensure that even for an empty (empty Struct, `null` when
+    // the mapper is configured to ignore nulls) input value, the row is deleted, which
+    // is needed for cleaner semantics of the REPLACE_IF_NEWEST mode.
     if (insertMode == InsertMode.REPLACE_IF_NEWEST) {
       builder.deleteRow();
     }
