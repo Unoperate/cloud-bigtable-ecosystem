@@ -277,6 +277,7 @@ public class BigtableSinkConfig extends AbstractConfig {
                 + " If the row to be written already exists in the table, an error is thrown."
                 + "\n- upsert - If the row to be written already exists,"
                 + " then its column values are overwritten with the ones provided."
+                // TODO: warn that deletes will result of deleting the whole row too
                 + "\n- replace_if_newest - If there are no cells newer than this record within the target"
                     +" row of the table, replace the current contents of the row with the record.")
         .define(

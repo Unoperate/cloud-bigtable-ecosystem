@@ -136,7 +136,6 @@ public class ValueMapper {
               mutationDataBuilder.setCell(
                   kafkaFieldName,
                   kafkaSubfieldName,
-                  timestampMicros,
                   ByteString.copyFrom(serialize(kafkaSubfieldValue, kafkaSubfieldSchema)));
             }
           }
@@ -145,7 +144,6 @@ public class ValueMapper {
             mutationDataBuilder.setCell(
                 getDefaultColumnFamily(topic),
                 ByteString.copyFrom(kafkaFieldName.getBytes(StandardCharsets.UTF_8)),
-                timestampMicros,
                 ByteString.copyFrom(serialize(kafkaFieldValue, kafkaFieldSchema)));
           }
         }
@@ -155,7 +153,6 @@ public class ValueMapper {
         mutationDataBuilder.setCell(
             getDefaultColumnFamily(topic),
             defaultColumnQualifier,
-            timestampMicros,
             ByteString.copyFrom(serialize(rootKafkaValue, rootKafkaSchema)));
       }
     }
@@ -166,6 +163,10 @@ public class ValueMapper {
   protected MutationDataBuilder createMutationDataBuilder(
       InsertMode insertMode, long timestampMicros) {
     Mutation mutation = Mutation.create();
+    // TODO: fix the edge case when the input struct is empty - it should remove things.
+    // TODO: write integration tests for deletes
+    // TODO: restore MutationDataBuilder constructors
+
     if (insertMode == InsertMode.REPLACE_IF_NEWEST) {
       mutation.deleteRow();
     }

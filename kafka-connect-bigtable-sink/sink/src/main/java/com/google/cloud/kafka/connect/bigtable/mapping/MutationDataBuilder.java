@@ -30,16 +30,11 @@ public class MutationDataBuilder {
   private final Set<String> requiredColumnFamilies;
   private final long timestampMicros;
 
-  @VisibleForTesting
-  MutationDataBuilder(Mutation mutation, long timestampMicros) {
-    this.mutation = mutation;
+  public MutationDataBuilder(Mutation initial, long timestampMicros) {
+    mutation = initial;
     mutationIsEmpty = true;
     requiredColumnFamilies = new HashSet<>();
     this.timestampMicros = timestampMicros;
-  }
-
-  public MutationDataBuilder(long timestampMicros) {
-    this(Mutation.create(), timestampMicros);
   }
 
   /**
@@ -93,8 +88,7 @@ public class MutationDataBuilder {
     mutation.deleteCells(columnFamily, columnQualifier, timestampRange);
   }
 
-  public void setCell(
-      String columnFamily, ByteString columnQualifier, long timestampMicros, ByteString value) {
+  public void setCell(String columnFamily, ByteString columnQualifier, ByteString value) {
     mutationIsEmpty = false;
     requiredColumnFamilies.add(columnFamily);
     mutation.setCell(columnFamily, columnQualifier, timestampMicros, value);

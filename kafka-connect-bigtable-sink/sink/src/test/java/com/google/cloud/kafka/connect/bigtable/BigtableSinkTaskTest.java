@@ -28,7 +28,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import com.google.api.gax.batching.Batcher;
@@ -645,7 +659,7 @@ public class BigtableSinkTaskTest {
       doReturn(rowKey).when(keyMapper).getKey(any());
       doAnswer(
               i -> {
-                MutationDataBuilder builder = new MutationDataBuilder(0);
+                MutationDataBuilder builder = new MutationDataBuilder(Mutation.create(), 0);
                 builder.deleteRow();
                 return builder;
               })
