@@ -36,6 +36,7 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
+import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.runtime.ConnectorConfig;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.StringConverter;
@@ -278,7 +279,7 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
   public void testReplaceIfNewestDeletesWorkWithNullDeletes()
           throws InterruptedException, ExecutionException {
     Converter keyConverter = new StringConverter();
-    Converter valueConverter = new StringConverter();
+    Converter valueConverter = JsonConverterFactory.create(true, false);
 
     Map<String, String> props = baseConnectorProps();
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
@@ -306,10 +307,8 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY3);
     SchemaAndValue nonexistentSchemaAndKey = new SchemaAndValue(Schema.STRING_SCHEMA, "nonexistent");
 
-    long lowestPossiblePreexistingRowsTimestamp = 0L;
+    long lowestPossibleTimestamp = 0L;
     long deleteTimestamp = 10000L;
-
-    // TODO: fix this
 
     // Set initial values of the preexisting rows.
     sendRecords(
@@ -320,16 +319,16 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
                     new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, writeSchemaAndValue)),
             keyConverter,
             valueConverter,
-            lowestPossiblePreexistingRowsTimestamp);
+            lowestPossibleTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 3);
 
     // Test that no kind of delete breaks on a nonexistent row.
     sendRecords(
             testId,
             List.of(
-                    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue1),
-    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue2),
-    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue3)
+                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue1),
+                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue2),
+                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue3)
             ),
             keyConverter,
             valueConverter,
