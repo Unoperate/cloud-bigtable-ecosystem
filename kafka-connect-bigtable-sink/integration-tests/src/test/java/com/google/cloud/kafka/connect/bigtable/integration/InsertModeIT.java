@@ -216,7 +216,8 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     Map<String, String> props = baseConnectorProps();
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
-    props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.DELETE.name());
+    // `REPLACE_IF_NEWEST` mode empties the row before setting the new cells irregardless of configured NullValueMode.
+    props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.IGNORE.name());
 
     String testId = startSingleTopicConnector(props);
     createTablesAndColumnFamilies(testId);

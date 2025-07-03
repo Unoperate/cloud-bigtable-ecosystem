@@ -162,16 +162,14 @@ public class ValueMapper {
   @VisibleForTesting
   protected MutationDataBuilder createMutationDataBuilder(
       InsertMode insertMode, long timestampMicros) {
-    Mutation mutation = Mutation.create();
-    // TODO: fix the edge case when the input struct is empty - it should remove things.
-    // TODO: write integration tests for deletes
-    // TODO: restore MutationDataBuilder constructors
-    // TODO: run spotless
-
+    MutationDataBuilder builder = new MutationDataBuilder(timestampMicros);
+    // Note that we call the method on the builder instead of passing it a set up mutation via a constructor.
+    // This way we ensure that even for an empty (empty Struct, `null` when the mapper is configured to ignore nulls)
+    // input value, the row is deleted, which is needed for cleaner semantics of the REPLACE_IF_NEWEST mode.
     if (insertMode == InsertMode.REPLACE_IF_NEWEST) {
-      mutation.deleteRow();
+      builder.deleteRow();
     }
-    return new MutationDataBuilder(mutation, timestampMicros);
+    return builder;
   }
 
   protected String getDefaultColumnFamily(String topic) {
