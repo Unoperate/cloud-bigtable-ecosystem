@@ -44,7 +44,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class InsertUpsertReplaceIT extends BaseKafkaConnectBigtableIT {
+public class InsertModeIT extends BaseKafkaConnectBigtableIT {
   private static final String KEY1 = "key1";
   private static final String KEY2 = "key2";
   private static final String KEY3 = "key3";
