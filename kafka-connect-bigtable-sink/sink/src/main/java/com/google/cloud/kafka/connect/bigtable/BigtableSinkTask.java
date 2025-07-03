@@ -448,9 +448,8 @@ public class BigtableSinkTask extends SinkTask {
     }
   }
 
-  // TODO(prawilny): reduce the copypaste?
   /**
-   * Applies the mutations replacing the rows which contained no cells fresher than respective mutations.
+   * Applies the mutations replacing the rows which contained no cells fresher than respective input record.
    *
    * @param mutations Mutations to be applied.
    * @param perRecordResults {@link Map} the per-record results will be written to.
@@ -469,7 +468,6 @@ public class BigtableSinkTask extends SinkTask {
     }
   }
 
-  // TODO(prawilny): reduce the copypaste?
   /**
    * Applies a single mutation batch using replace-if-newest logic.
    *
