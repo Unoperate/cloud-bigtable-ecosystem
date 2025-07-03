@@ -565,9 +565,9 @@ public class BigtableSinkTaskTest {
     doNothing().when(task).performReplaceBatch(any(), any());
 
     Map<SinkRecord, MutationData> input =
-            IntStream.range(0, totalRecords)
-                    .mapToObj(i -> new SinkRecord("", 1, null, null, null, null, i))
-                    .collect(Collectors.toMap(i -> i, ignored -> commonMutationData));
+        IntStream.range(0, totalRecords)
+            .mapToObj(i -> new SinkRecord("", 1, null, null, null, null, i))
+            .collect(Collectors.toMap(i -> i, ignored -> commonMutationData));
 
     Map<SinkRecord, Future<Void>> fakeMutationData = mock(Map.class);
     task.replaceRows(input, fakeMutationData);
@@ -577,16 +577,21 @@ public class BigtableSinkTaskTest {
     int replaceRowsCalls = 1;
 
     verify(task, times(expectedFullBatches))
-            .performReplaceBatch(argThat(v -> v.size() == maxBatchSize), any());
+        .performReplaceBatch(argThat(v -> v.size() == maxBatchSize), any());
     verify(task, times(expectedPartialBatches))
-            .performReplaceBatch(argThat(v -> v.size() != maxBatchSize), any());
-    assertTotalNumberOfInvocations(task, expectedFullBatches + expectedPartialBatches + replaceRowsCalls);
+        .performReplaceBatch(argThat(v -> v.size() != maxBatchSize), any());
+    assertTotalNumberOfInvocations(
+        task, expectedFullBatches + expectedPartialBatches + replaceRowsCalls);
   }
 
   @Test
   public void testPerformReplaceBatch() throws ExecutionException, InterruptedException {
     ApiException exception = ApiExceptionFactory.create();
-    doReturn(completedApiFuture(false)).doReturn(completedApiFuture(true)).doReturn(failedApiFuture(exception)).when(bigtableData).checkAndMutateRowAsync(any());
+    doReturn(completedApiFuture(false))
+        .doReturn(completedApiFuture(true))
+        .doReturn(failedApiFuture(exception))
+        .when(bigtableData)
+        .checkAndMutateRowAsync(any());
     task = new TestBigtableSinkTask(null, bigtableData, null, null, null, null, null);
 
     SinkRecord falseRecord = new SinkRecord("", 1, null, null, null, null, 1);
@@ -596,11 +601,9 @@ public class BigtableSinkTaskTest {
     MutationData commonMutationData = mock(MutationData.class);
     doReturn("ignored").when(commonMutationData).getTargetTable();
     doReturn(ByteString.copyFrom("ignored".getBytes(StandardCharsets.UTF_8)))
-            .when(commonMutationData)
-            .getRowKey();
-    doReturn(0L)
-            .when(commonMutationData)
-            .getTimestampMicros();
+        .when(commonMutationData)
+        .getRowKey();
+    doReturn(0L).when(commonMutationData).getTimestampMicros();
     doReturn(Mutation.create()).when(commonMutationData).getMutation();
 
     // LinkedHashMap, because we mock consecutive return values of Bigtable client mock and thus
@@ -622,7 +625,8 @@ public class BigtableSinkTaskTest {
     public final boolean autoCreateColumnFamilies;
     public final InsertMode insertMode;
 
-    public PutBranchesTestCase(boolean autoCreateTables, boolean autoCreateColumnFamilies, InsertMode insertMode) {
+    public PutBranchesTestCase(
+        boolean autoCreateTables, boolean autoCreateColumnFamilies, InsertMode insertMode) {
       this.autoCreateTables = autoCreateTables;
       this.autoCreateColumnFamilies = autoCreateColumnFamilies;
       this.insertMode = insertMode;
@@ -636,22 +640,22 @@ public class BigtableSinkTaskTest {
 
     for (PutBranchesTestCase testCase :
         List.of(
-                new PutBranchesTestCase(false, false, InsertMode.INSERT),
-                new PutBranchesTestCase(false, true, InsertMode.INSERT),
-                new PutBranchesTestCase(true, false, InsertMode.INSERT),
-                new PutBranchesTestCase(true, true, InsertMode.INSERT),
-                new PutBranchesTestCase(false, false, InsertMode.UPSERT),
-                new PutBranchesTestCase(false, true, InsertMode.UPSERT),
-                new PutBranchesTestCase(true, false, InsertMode.UPSERT),
-                new PutBranchesTestCase(true, true, InsertMode.UPSERT),
-                new PutBranchesTestCase(false, false, InsertMode.REPLACE_IF_NEWEST),
-                new PutBranchesTestCase(false, true, InsertMode.REPLACE_IF_NEWEST),
-                new PutBranchesTestCase(true, false, InsertMode.REPLACE_IF_NEWEST),
-                new PutBranchesTestCase(true, true, InsertMode.REPLACE_IF_NEWEST)
-            )) {
+            new PutBranchesTestCase(false, false, InsertMode.INSERT),
+            new PutBranchesTestCase(false, true, InsertMode.INSERT),
+            new PutBranchesTestCase(true, false, InsertMode.INSERT),
+            new PutBranchesTestCase(true, true, InsertMode.INSERT),
+            new PutBranchesTestCase(false, false, InsertMode.UPSERT),
+            new PutBranchesTestCase(false, true, InsertMode.UPSERT),
+            new PutBranchesTestCase(true, false, InsertMode.UPSERT),
+            new PutBranchesTestCase(true, true, InsertMode.UPSERT),
+            new PutBranchesTestCase(false, false, InsertMode.REPLACE_IF_NEWEST),
+            new PutBranchesTestCase(false, true, InsertMode.REPLACE_IF_NEWEST),
+            new PutBranchesTestCase(true, false, InsertMode.REPLACE_IF_NEWEST),
+            new PutBranchesTestCase(true, true, InsertMode.REPLACE_IF_NEWEST))) {
       Map<String, String> props = BasicPropertiesFactory.getTaskProps();
       props.put(AUTO_CREATE_TABLES_CONFIG, Boolean.toString(testCase.autoCreateTables));
-      props.put(AUTO_CREATE_COLUMN_FAMILIES_CONFIG, Boolean.toString(testCase.autoCreateColumnFamilies));
+      props.put(
+          AUTO_CREATE_COLUMN_FAMILIES_CONFIG, Boolean.toString(testCase.autoCreateColumnFamilies));
       props.put(INSERT_MODE_CONFIG, testCase.insertMode.name());
       config = new BigtableSinkTaskConfig(props);
 
@@ -688,9 +692,12 @@ public class BigtableSinkTaskTest {
       verify(schemaManager, times(testCase.autoCreateTables ? 1 : 0)).ensureTablesExist(any());
       verify(schemaManager, times(testCase.autoCreateColumnFamilies ? 1 : 0))
           .ensureColumnFamiliesExist(any());
-      verify(task, times(testCase.insertMode == InsertMode.INSERT ? 1 : 0)).insertRows(any(), any());
-      verify(task, times(testCase.insertMode == InsertMode.UPSERT ? 1 : 0)).upsertRows(any(), any());
-      verify(task, times(testCase.insertMode == InsertMode.REPLACE_IF_NEWEST ? 1 : 0)).replaceRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.INSERT ? 1 : 0))
+          .insertRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.UPSERT ? 1 : 0))
+          .upsertRows(any(), any());
+      verify(task, times(testCase.insertMode == InsertMode.REPLACE_IF_NEWEST ? 1 : 0))
+          .replaceRows(any(), any());
       verify(task, times(1)).handleResults(any());
 
       reset(task);

@@ -36,7 +36,6 @@ import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.runtime.ConnectorConfig;
 import org.apache.kafka.connect.storage.Converter;
 import org.apache.kafka.connect.storage.StringConverter;
@@ -54,7 +53,7 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
   private static final ByteString KEY2_BYTES =
       ByteString.copyFrom(KEY2.getBytes(StandardCharsets.UTF_8));
   private static final ByteString KEY3_BYTES =
-          ByteString.copyFrom(KEY2.getBytes(StandardCharsets.UTF_8));
+      ByteString.copyFrom(KEY2.getBytes(StandardCharsets.UTF_8));
   private static final String VALUE1 = "value1";
   private static final String VALUE2 = "value2";
   private static final String VALUE3 = "value3";
@@ -119,8 +118,7 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
   }
 
   @Test
-  public void testReplaceIfNewestWrites()
-      throws InterruptedException, ExecutionException {
+  public void testReplaceIfNewestWrites() throws InterruptedException, ExecutionException {
     Converter keyConverter = new StringConverter();
     Converter valueConverter = JsonConverterFactory.create(true, false);
 
@@ -137,14 +135,8 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     String field1 = "f1";
     String field2 = "f2";
 
-    Schema schema1 =
-        SchemaBuilder.struct()
-            .field(field1, Schema.STRING_SCHEMA)
-            .build();
-    Schema schema2 =
-            SchemaBuilder.struct()
-                    .field(field2, Schema.STRING_SCHEMA)
-                    .build();
+    Schema schema1 = SchemaBuilder.struct().field(field1, Schema.STRING_SCHEMA).build();
+    Schema schema2 = SchemaBuilder.struct().field(field2, Schema.STRING_SCHEMA).build();
 
     Struct value1 = new Struct(schema1).put(field1, VALUE1);
     Struct value2 = new Struct(schema2).put(field2, VALUE2);
@@ -209,15 +201,15 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
   }
 
   @Test
-  public void testReplaceIfNewestDeletes()
-          throws InterruptedException, ExecutionException {
+  public void testReplaceIfNewestDeletes() throws InterruptedException, ExecutionException {
     Converter keyConverter = new StringConverter();
     Converter valueConverter = new StringConverter();
 
     Map<String, String> props = baseConnectorProps();
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
-    // `REPLACE_IF_NEWEST` mode empties the row before setting the new cells irregardless of configured NullValueMode.
+    // `REPLACE_IF_NEWEST` mode empties the row before setting the new cells irregardless of
+    // configured NullValueMode.
     props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.IGNORE.name());
 
     String testId = startSingleTopicConnector(props);
@@ -234,36 +226,36 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
 
     // Set initial values of the preexisting rows.
     sendRecords(
-            testId,
-            List.of(
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue)),
-            keyConverter,
-            valueConverter,
-            preexistingRowsTimestamp);
+        testId,
+        List.of(
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue)),
+        keyConverter,
+        valueConverter,
+        preexistingRowsTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 2);
 
     // Test deleting a row that didn't exist before.
     sendRecords(
-            testId,
-            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue)),
-            keyConverter,
-            valueConverter,
-            preexistingRowsTimestamp);
+        testId,
+        List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue)),
+        keyConverter,
+        valueConverter,
+        preexistingRowsTimestamp);
     // Unsuccessfully try to delete a row using an earlier timestamp.
     sendRecords(
-            testId,
-            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue)),
-            keyConverter,
-            valueConverter,
-            preexistingRowsTimestamp - 1L);
+        testId,
+        List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue)),
+        keyConverter,
+        valueConverter,
+        preexistingRowsTimestamp - 1L);
     // Successfully try to delete a row using the same timestamp.
     sendRecords(
-            testId,
-            List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue)),
-            keyConverter,
-            valueConverter,
-            preexistingRowsTimestamp);
+        testId,
+        List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue)),
+        keyConverter,
+        valueConverter,
+        preexistingRowsTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 1);
     assertConnectorAndAllTasksAreRunning(testId);
 
@@ -273,11 +265,12 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
   }
 
-  // This test ensures that deletion of row caused by REPLACE_IF_NEWEST works well when combined with DELETE
+  // This test ensures that deletion of row caused by REPLACE_IF_NEWEST works well when combined
+  // with DELETE
   // null handling mode.
   @Test
   public void testReplaceIfNewestDeletesWorkWithNullDeletes()
-          throws InterruptedException, ExecutionException {
+      throws InterruptedException, ExecutionException {
     Converter keyConverter = new StringConverter();
     Converter valueConverter = JsonConverterFactory.create(true, false);
 
@@ -293,58 +286,64 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
 
     SchemaAndValue deleteSchemaAndValue1 = new SchemaAndValue(Schema.OPTIONAL_STRING_SCHEMA, null);
 
-    Schema schema2 = SchemaBuilder.struct().optional().field(testId, Schema.OPTIONAL_STRING_SCHEMA).build();
-    SchemaAndValue deleteSchemaAndValue2 = new SchemaAndValue(schema2, new Struct(schema2).put(testId, null));
+    Schema schema2 =
+        SchemaBuilder.struct().optional().field(testId, Schema.OPTIONAL_STRING_SCHEMA).build();
+    SchemaAndValue deleteSchemaAndValue2 =
+        new SchemaAndValue(schema2, new Struct(schema2).put(testId, null));
 
     Schema innerSchema3 =
-            SchemaBuilder.struct().optional().field("KAFKA_CONNECT", Schema.OPTIONAL_STRING_SCHEMA).build();
+        SchemaBuilder.struct()
+            .optional()
+            .field("KAFKA_CONNECT", Schema.OPTIONAL_STRING_SCHEMA)
+            .build();
     Schema schema3 = SchemaBuilder.struct().optional().field(testId, innerSchema3).build();
-    SchemaAndValue deleteSchemaAndValue3 = new SchemaAndValue(schema3, new Struct(schema3).put(testId,
-            new Struct(innerSchema3).put("KAFKA_CONNECT", null)));
+    SchemaAndValue deleteSchemaAndValue3 =
+        new SchemaAndValue(
+            schema3,
+            new Struct(schema3).put(testId, new Struct(innerSchema3).put("KAFKA_CONNECT", null)));
 
     SchemaAndValue schemaAndKey1 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY1);
     SchemaAndValue schemaAndKey2 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY2);
     SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY3);
-    SchemaAndValue nonexistentSchemaAndKey = new SchemaAndValue(Schema.STRING_SCHEMA, "nonexistent");
+    SchemaAndValue nonexistentSchemaAndKey =
+        new SchemaAndValue(Schema.STRING_SCHEMA, "nonexistent");
 
     long lowestPossibleTimestamp = 0L;
     long deleteTimestamp = 10000L;
 
     // Set initial values of the preexisting rows.
     sendRecords(
-            testId,
-            List.of(
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue),
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, writeSchemaAndValue)),
-            keyConverter,
-            valueConverter,
-            lowestPossibleTimestamp);
+        testId,
+        List.of(
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue),
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, writeSchemaAndValue)),
+        keyConverter,
+        valueConverter,
+        lowestPossibleTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 3);
 
     // Test that no kind of delete breaks on a nonexistent row.
     sendRecords(
-            testId,
-            List.of(
-                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue1),
-                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue2),
-                  new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue3)
-            ),
-            keyConverter,
-            valueConverter,
-            deleteTimestamp);
+        testId,
+        List.of(
+            new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue1),
+            new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue2),
+            new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue3)),
+        keyConverter,
+        valueConverter,
+        deleteTimestamp);
 
     // Test that all kinds of delete work on existing rows.
     sendRecords(
-            testId,
-            List.of(
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue1),
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue2),
-                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue3)
-            ),
-            keyConverter,
-            valueConverter,
-            deleteTimestamp);
+        testId,
+        List.of(
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue1),
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue2),
+            new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue3)),
+        keyConverter,
+        valueConverter,
+        deleteTimestamp);
 
     waitUntilBigtableContainsNumberOfRows(testId, 0);
     assertConnectorAndAllTasksAreRunning(testId);

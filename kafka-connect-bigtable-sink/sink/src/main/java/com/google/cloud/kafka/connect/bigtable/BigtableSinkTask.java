@@ -449,7 +449,8 @@ public class BigtableSinkTask extends SinkTask {
   }
 
   /**
-   * Applies the mutations replacing the rows which contained no cells fresher than respective input record.
+   * Applies the mutations replacing the rows which contained no cells fresher than respective input
+   * record.
    *
    * @param mutations Mutations to be applied.
    * @param perRecordResults {@link Map} the per-record results will be written to.

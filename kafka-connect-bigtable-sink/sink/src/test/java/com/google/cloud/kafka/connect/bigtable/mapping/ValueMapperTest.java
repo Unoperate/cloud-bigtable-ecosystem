@@ -364,8 +364,7 @@ public class ValueMapperTest {
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, outerMap);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expectedJsonificationBytes);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expectedJsonificationBytes);
   }
 
   @Test
@@ -496,10 +495,7 @@ public class ValueMapperTest {
         .deleteCells(
             structFieldName, optionalFieldNameBytes, Range.TimestampRange.create(0, TIMESTAMP));
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            structFieldName,
-            structFieldNameBytes,
-            expectedInnermostStringificationBytes);
+        .setCell(structFieldName, structFieldNameBytes, expectedInnermostStringificationBytes);
     assertTotalNumberOfInvocations(mutationDataBuilder, 5);
     assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
   }
@@ -648,8 +644,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.DELETE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, outerStruct);
     verify(mutationDataBuilder, times(1)).deleteFamily(familyToBeDeleted);
-    verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, valueKeyBytes, valueBytes);
+    verify(mutationDataBuilder, times(1)).setCell(DEFAULT_COLUMN_FAMILY, valueKeyBytes, valueBytes);
     verify(mutationDataBuilder, times(1))
         .deleteCells(
             outerStructKey.toString(),
@@ -667,13 +662,23 @@ public class ValueMapperTest {
 
   @Test
   public void testCreateMutationDataBuilder() {
-    ValueMapper mapper = new ValueMapper(DEFAULT_COLUMN, DEFAULT_COLUMN_FAMILY, NullValueMode.IGNORE);
-    assertTrue(mapper.createMutationDataBuilder(InsertMode.INSERT, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
-            , ROW_KEY).isEmpty());
-    assertTrue(mapper.createMutationDataBuilder(InsertMode.UPSERT, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
-            , ROW_KEY).isEmpty());
-    assertTrue(mapper.createMutationDataBuilder(InsertMode.REPLACE_IF_NEWEST, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
-            , ROW_KEY).isPresent());
+    ValueMapper mapper =
+        new ValueMapper(DEFAULT_COLUMN, DEFAULT_COLUMN_FAMILY, NullValueMode.IGNORE);
+    assertTrue(
+        mapper
+            .createMutationDataBuilder(InsertMode.INSERT, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY)
+            .isEmpty());
+    assertTrue(
+        mapper
+            .createMutationDataBuilder(InsertMode.UPSERT, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY)
+            .isEmpty());
+    assertTrue(
+        mapper
+            .createMutationDataBuilder(InsertMode.REPLACE_IF_NEWEST, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY)
+            .isPresent());
   }
 
   @Test
@@ -723,10 +728,7 @@ public class ValueMapperTest {
     MutationDataBuilder mutationDataBuilder =
         getRecordMutationDataBuilder(mapper, getStructWithNullOnNthNestingLevel(1));
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            DEFAULT_COLUMN_FAMILY,
-            NESTED_NULL_STRUCT_FIELD_NAME_BYTES,
-            ByteString.empty());
+        .setCell(DEFAULT_COLUMN_FAMILY, NESTED_NULL_STRUCT_FIELD_NAME_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
     assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
   }
@@ -739,9 +741,7 @@ public class ValueMapperTest {
         getRecordMutationDataBuilder(mapper, getStructWithNullOnNthNestingLevel(2));
     verify(mutationDataBuilder, times(1))
         .setCell(
-            NESTED_NULL_STRUCT_FIELD_NAME,
-            NESTED_NULL_STRUCT_FIELD_NAME_BYTES,
-            ByteString.empty());
+            NESTED_NULL_STRUCT_FIELD_NAME, NESTED_NULL_STRUCT_FIELD_NAME_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
     assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
   }
