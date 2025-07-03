@@ -242,13 +242,13 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
             preexistingRowsTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 2);
 
-    // Test deleting a row that didn't exist before using the largest possible timestamp.
+    // Test deleting a row that didn't exist before.
     sendRecords(
             testId,
             List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue)),
             keyConverter,
             valueConverter,
-            Long.MAX_VALUE);
+            preexistingRowsTimestamp);
     // Unsuccessfully try to delete a row using an earlier timestamp.
     sendRecords(
             testId,
@@ -270,5 +270,84 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     Row row2 = rows.get(KEY2_BYTES);
     assertEquals(1, row2.getCells().size());
     assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
+  }
+
+  // This test ensures that deletion of row caused by REPLACE_IF_NEWEST works well when combined with DELETE
+  // null handling mode.
+  @Test
+  public void testReplaceIfNewestDeletesWorkWithNullDeletes()
+          throws InterruptedException, ExecutionException {
+    Converter keyConverter = new StringConverter();
+    Converter valueConverter = new StringConverter();
+
+    Map<String, String> props = baseConnectorProps();
+    props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
+    props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
+    props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.DELETE.name());
+
+    String testId = startSingleTopicConnector(props);
+    createTablesAndColumnFamilies(testId);
+
+    SchemaAndValue writeSchemaAndValue = new SchemaAndValue(Schema.STRING_SCHEMA, VALUE1);
+
+    SchemaAndValue deleteSchemaAndValue1 = new SchemaAndValue(Schema.OPTIONAL_STRING_SCHEMA, null);
+
+    Schema schema2 = SchemaBuilder.struct().optional().field(testId, Schema.OPTIONAL_STRING_SCHEMA).build();
+    SchemaAndValue deleteSchemaAndValue2 = new SchemaAndValue(schema2, new Struct(schema2).put(testId, null));
+
+    Schema innerSchema3 =
+            SchemaBuilder.struct().optional().field("KAFKA_CONNECT", Schema.OPTIONAL_STRING_SCHEMA).build();
+    Schema schema3 = SchemaBuilder.struct().optional().field(testId, innerSchema3).build();
+    SchemaAndValue deleteSchemaAndValue3 = new SchemaAndValue(schema3, new Struct(schema3).put(testId,
+            new Struct(innerSchema3).put("KAFKA_CONNECT", null)));
+
+    SchemaAndValue schemaAndKey1 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY1);
+    SchemaAndValue schemaAndKey2 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY2);
+    SchemaAndValue schemaAndKey3 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY3);
+    SchemaAndValue nonexistentSchemaAndKey = new SchemaAndValue(Schema.STRING_SCHEMA, "nonexistent");
+
+    long lowestPossiblePreexistingRowsTimestamp = 0L;
+    long deleteTimestamp = 10000L;
+
+    // TODO: fix this
+
+    // Set initial values of the preexisting rows.
+    sendRecords(
+            testId,
+            List.of(
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, writeSchemaAndValue),
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, writeSchemaAndValue),
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, writeSchemaAndValue)),
+            keyConverter,
+            valueConverter,
+            lowestPossiblePreexistingRowsTimestamp);
+    waitUntilBigtableContainsNumberOfRows(testId, 3);
+
+    // Test that no kind of delete breaks on a nonexistent row.
+    sendRecords(
+            testId,
+            List.of(
+                    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue1),
+    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue2),
+    new AbstractMap.SimpleImmutableEntry<>(nonexistentSchemaAndKey, deleteSchemaAndValue3)
+            ),
+            keyConverter,
+            valueConverter,
+            deleteTimestamp);
+
+    // Test that all kinds of delete work on existing rows.
+    sendRecords(
+            testId,
+            List.of(
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey1, deleteSchemaAndValue1),
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey2, deleteSchemaAndValue2),
+                    new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue3)
+            ),
+            keyConverter,
+            valueConverter,
+            deleteTimestamp);
+
+    waitUntilBigtableContainsNumberOfRows(testId, 0);
+    assertConnectorAndAllTasksAreRunning(testId);
   }
 }

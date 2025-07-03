@@ -56,16 +56,11 @@ public class MutationData {
     return this.timestampMicros;
   }
 
-  public RowMutationEntry getUpsertMutation() {
+  public RowMutationEntry getRowMutationEntry() {
     return RowMutationEntry.createFromMutationUnsafe(this.rowKey, this.mutation);
   }
 
-  public Mutation getInsertMutation() {
-    return mutation;
-  }
-
-  public Mutation getReplaceMutation() {
-    // TODO(prawilny): ensure that DeleteRow is first in the message...
+  public Mutation getMutation() {
     return mutation;
   }
 

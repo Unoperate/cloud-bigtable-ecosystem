@@ -443,7 +443,7 @@ public class BigtableSinkTaskTest {
     doReturn(ByteString.copyFrom("ignored".getBytes(StandardCharsets.UTF_8)))
         .when(commonMutationData)
         .getRowKey();
-    doReturn(Mutation.create()).when(commonMutationData).getInsertMutation();
+    doReturn(Mutation.create()).when(commonMutationData).getMutation();
 
     // LinkedHashMap, because we mock consecutive return values of Bigtable client mock and thus
     // rely on the order.
@@ -523,10 +523,10 @@ public class BigtableSinkTaskTest {
 
     MutationData okMutationData = mock(MutationData.class);
     doReturn(okTable).when(okMutationData).getTargetTable();
-    doReturn(mock(RowMutationEntry.class)).when(okMutationData).getUpsertMutation();
+    doReturn(mock(RowMutationEntry.class)).when(okMutationData).getRowMutationEntry();
     MutationData errorMutationData = mock(MutationData.class);
     doReturn(errorTable).when(errorMutationData).getTargetTable();
-    doReturn(mock(RowMutationEntry.class)).when(errorMutationData).getUpsertMutation();
+    doReturn(mock(RowMutationEntry.class)).when(errorMutationData).getRowMutationEntry();
 
     Map<SinkRecord, MutationData> input =
         Map.of(
@@ -601,7 +601,7 @@ public class BigtableSinkTaskTest {
     doReturn(0L)
             .when(commonMutationData)
             .getTimestampMicros();
-    doReturn(Mutation.create()).when(commonMutationData).getReplaceMutation();
+    doReturn(Mutation.create()).when(commonMutationData).getMutation();
 
     // LinkedHashMap, because we mock consecutive return values of Bigtable client mock and thus
     // rely on the order.

@@ -439,7 +439,7 @@ public class BigtableSinkTask extends SinkTask {
 
       Batcher<RowMutationEntry, Void> batcher =
           batchers.computeIfAbsent(recordTableName, (k) -> bigtableData.newBulkMutationBatcher(k));
-      perRecordResults.put(record, batcher.add(recordMutationData.getUpsertMutation()));
+      perRecordResults.put(record, batcher.add(recordMutationData.getRowMutationEntry()));
     }
     for (Batcher<RowMutationEntry, Void> batcher : batchers.values()) {
       // We must flush the batchers to respect CONFIG_MAX_BATCH_SIZE.
@@ -494,7 +494,7 @@ public class BigtableSinkTask extends SinkTask {
       ConditionalRowMutation crm =
           ConditionalRowMutation.create(recordTableName, recordMutationData.getRowKey())
               .condition(timestampRange)
-              .otherwise(recordMutationData.getReplaceMutation());
+              .otherwise(recordMutationData.getMutation());
 
       ApiFuture<Boolean> result = bigtableData.checkAndMutateRowAsync(crm);
       // We don't care if the row was really written, the only interesting aspect is whether it
@@ -529,7 +529,7 @@ public class BigtableSinkTask extends SinkTask {
               // We first check if any cell of this row exists...
               .condition(Filters.FILTERS.pass())
               // ... and perform the mutation only if no cell exists.
-              .otherwise(recordMutationData.getInsertMutation());
+              .otherwise(recordMutationData.getMutation());
       boolean insertSuccessful;
       Optional<Throwable> exceptionThrown = Optional.empty();
       try {
