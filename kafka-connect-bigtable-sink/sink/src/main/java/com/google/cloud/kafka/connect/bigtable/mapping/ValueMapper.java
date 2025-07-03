@@ -166,6 +166,7 @@ public class ValueMapper {
     // TODO: fix the edge case when the input struct is empty - it should remove things.
     // TODO: write integration tests for deletes
     // TODO: restore MutationDataBuilder constructors
+    // TODO: run spotless
 
     if (insertMode == InsertMode.REPLACE_IF_NEWEST) {
       mutation.deleteRow();

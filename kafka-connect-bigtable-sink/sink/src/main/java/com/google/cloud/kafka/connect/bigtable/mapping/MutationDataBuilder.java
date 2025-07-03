@@ -30,11 +30,16 @@ public class MutationDataBuilder {
   private final Set<String> requiredColumnFamilies;
   private final long timestampMicros;
 
-  public MutationDataBuilder(Mutation initial, long timestampMicros) {
-    mutation = initial;
+  @VisibleForTesting
+  MutationDataBuilder(Mutation mutation, long timestampMicros) {
+    this.mutation = mutation;
     mutationIsEmpty = true;
     requiredColumnFamilies = new HashSet<>();
     this.timestampMicros = timestampMicros;
+  }
+
+  public MutationDataBuilder(long timestampMicros) {
+    this(Mutation.create(), timestampMicros);
   }
 
   /**

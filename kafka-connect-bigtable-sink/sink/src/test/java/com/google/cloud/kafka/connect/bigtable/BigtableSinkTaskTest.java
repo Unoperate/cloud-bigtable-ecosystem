@@ -659,7 +659,7 @@ public class BigtableSinkTaskTest {
       doReturn(rowKey).when(keyMapper).getKey(any());
       doAnswer(
               i -> {
-                MutationDataBuilder builder = new MutationDataBuilder(Mutation.create(), 0);
+                MutationDataBuilder builder = new MutationDataBuilder(0);
                 builder.deleteRow();
                 return builder;
               })
