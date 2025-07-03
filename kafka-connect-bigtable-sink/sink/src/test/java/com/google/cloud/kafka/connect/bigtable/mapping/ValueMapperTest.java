@@ -666,6 +666,17 @@ public class ValueMapperTest {
   }
 
   @Test
+  public void testCreateMutationDataBuilder() {
+    ValueMapper mapper = new ValueMapper(DEFAULT_COLUMN, DEFAULT_COLUMN_FAMILY, NullValueMode.IGNORE);
+    assertTrue(mapper.createMutationDataBuilder(InsertMode.INSERT, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
+            , ROW_KEY).isEmpty());
+    assertTrue(mapper.createMutationDataBuilder(InsertMode.UPSERT, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
+            , ROW_KEY).isEmpty());
+    assertTrue(mapper.createMutationDataBuilder(InsertMode.REPLACE_IF_NEWEST, TIMESTAMP).maybeBuild(TARGET_TABLE_NAME
+            , ROW_KEY).isPresent());
+  }
+
+  @Test
   public void testNullModeIgnoreRoot() {
     ValueMapper mapper =
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
@@ -810,8 +821,6 @@ public class ValueMapperTest {
     SchemaAndValue schemaAndValue = new SchemaAndValue(null, kafkaValue);
     return mapper.getRecordMutationDataBuilder(schemaAndValue, topic, insertMode, TIMESTAMP);
   }
-
-  // TODO(prawilny): add InsertMode::REPLACE_IF_NEWEST test
 
   private static class TestValueMapper extends ValueMapper {
 
