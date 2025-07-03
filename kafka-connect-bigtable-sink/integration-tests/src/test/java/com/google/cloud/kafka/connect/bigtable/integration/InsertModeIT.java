@@ -126,7 +126,7 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     Map<String, String> props = baseConnectorProps();
     props.put(ConnectorConfig.VALUE_CONVERTER_CLASS_CONFIG, valueConverter.getClass().getName());
     props.put(BigtableSinkConfig.INSERT_MODE_CONFIG, InsertMode.REPLACE_IF_NEWEST.name());
-    // Let's ignore `null`s to ensure that it's `InsertMode.REPLACE_IF_NEWEST`'s behavior
+    // Let's ignore `null`s to ensure that we observe `InsertMode.REPLACE_IF_NEWEST`'s behavior
     // rather than `NullValueMode.DELETE`'s.
     props.put(BigtableSinkConfig.VALUE_NULL_MODE_CONFIG, NullValueMode.IGNORE.name());
 
@@ -148,8 +148,8 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     Struct value1 = new Struct(schema1).put(field1, VALUE1);
     Struct value2 = new Struct(schema2).put(field2, VALUE2);
 
-    SchemaAndValue schemaAndValue1 = new SchemaAndValue(schema1, value1);
-    SchemaAndValue schemaAndValue2 = new SchemaAndValue(schema2, value2);
+    SchemaAndValue schemaAndValue1 = new SchemaAndValue(value1.schema(), value1);
+    SchemaAndValue schemaAndValue2 = new SchemaAndValue(value2.schema(), value2);
 
     SchemaAndValue schemaAndKey1 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY1);
     SchemaAndValue schemaAndKey2 = new SchemaAndValue(Schema.STRING_SCHEMA, KEY2);
@@ -182,7 +182,7 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
         keyConverter,
         valueConverter,
         preexistingRowsTimestamp - 1L);
-    // Test writing to a row that didn't exist before.
+    // Test writing to a row that didn't exist before using the lowest possible timestamp.
     sendRecords(
         testId,
         List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, schemaAndValue1)),
@@ -198,10 +198,13 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
     Row row3 = rows.get(KEY3_BYTES);
     assertEquals(1, row1.getCells().size());
     assertEquals(VALUE2_BYTES, row1.getCells().get(0).getValue());
+    assertEquals(ByteString.copyFromUtf8(field2), row1.getCells().get(0).getQualifier());
     assertEquals(1, row2.getCells().size());
     assertEquals(VALUE1_BYTES, row2.getCells().get(0).getValue());
+    assertEquals(ByteString.copyFromUtf8(field1), row2.getCells().get(0).getQualifier());
     assertEquals(1, row3.getCells().size());
     assertEquals(VALUE1_BYTES, row3.getCells().get(0).getValue());
+    assertEquals(ByteString.copyFromUtf8(field1), row3.getCells().get(0).getQualifier());
   }
 
   @Test
