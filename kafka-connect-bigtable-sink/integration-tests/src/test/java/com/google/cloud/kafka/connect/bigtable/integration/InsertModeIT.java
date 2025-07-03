@@ -241,13 +241,13 @@ public class InsertModeIT extends BaseKafkaConnectBigtableIT {
             preexistingRowsTimestamp);
     waitUntilBigtableContainsNumberOfRows(testId, 2);
 
-    // Test deleting a row that didn't exist before.
+    // Test deleting a row that didn't exist before using the largest possible timestamp.
     sendRecords(
             testId,
             List.of(new AbstractMap.SimpleImmutableEntry<>(schemaAndKey3, deleteSchemaAndValue)),
             keyConverter,
             valueConverter,
-            0L);
+            Long.MAX_VALUE);
     // Unsuccessfully try to delete a row using an earlier timestamp.
     sendRecords(
             testId,
