@@ -35,6 +35,7 @@
         <surefire.version>3.5.2</surefire.version>
         <failsafe.version>3.5.2</failsafe.version>
         <maven-jar.version>3.4.2</maven-jar.version>
+        <maven-build-helper.version>3.3.0</maven-build-helper.version>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
