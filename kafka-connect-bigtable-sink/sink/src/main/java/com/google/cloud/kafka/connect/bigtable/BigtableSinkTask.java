@@ -449,8 +449,9 @@ public class BigtableSinkTask extends SinkTask {
   }
 
   /**
-   * Applies the mutations replacing the rows which contained no cells fresher than respective input
-   * record.
+   * Applies the mutations using replace-if-newest logic.
+   *
+   * <p>See {@link BigtableSinkConfig#INSERT_MODE_CONFIG} option's description for details.
    *
    * @param mutations Mutations to be applied.
    * @param perRecordResults {@link Map} the per-record results will be written to.
@@ -472,6 +473,8 @@ public class BigtableSinkTask extends SinkTask {
   /**
    * Applies a single mutation batch using replace-if-newest logic.
    *
+   * <p>See {@link BigtableSinkConfig#INSERT_MODE_CONFIG} option's description for details.
+   *
    * @param batch Batch of mutations to be applied.
    * @param perRecordResults A {@link Map} the per-record results will be written to.
    */
@@ -492,6 +495,11 @@ public class BigtableSinkTask extends SinkTask {
               .range()
               .startOpen(recordMutationData.getTimestampMicros())
               .endUnbounded();
+
+      // Execute the mutation (which is assumed to contain deleteRow as its first element)
+      // if the bigtable row contains no cell fresher than this record.
+      // In other words, replace the row if the current new timestamp is greater or equal
+      // to the current one.
       ConditionalRowMutation crm =
           ConditionalRowMutation.create(recordTableName, recordMutationData.getRowKey())
               .condition(timestampRange)
