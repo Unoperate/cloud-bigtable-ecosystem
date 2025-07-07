@@ -694,6 +694,7 @@ public class ValueMapperTest {
         mapper
             .createMutationDataBuilder(InsertMode.REPLACE_IF_NEWEST, TIMESTAMP)
             .maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    // It's not empty, because it contains a deleteRow.
     assertTrue(maybeMutationData.isPresent());
     assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
