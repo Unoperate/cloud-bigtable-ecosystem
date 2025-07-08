@@ -19,6 +19,7 @@ import static com.google.cloud.kafka.connect.bigtable.util.MockUtil.assertTotalN
 import static com.google.cloud.kafka.connect.bigtable.util.NestedNullStructFactory.NESTED_NULL_STRUCT_FIELD_NAME;
 import static com.google.cloud.kafka.connect.bigtable.util.NestedNullStructFactory.NESTED_NULL_STRUCT_FIELD_NAME_BYTES;
 import static com.google.cloud.kafka.connect.bigtable.util.NestedNullStructFactory.getStructWithNullOnNthNestingLevel;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.cloud.bigtable.data.v2.models.Range;
 import com.google.cloud.kafka.connect.bigtable.config.ConfigInterpolation;
+import com.google.cloud.kafka.connect.bigtable.config.InsertMode;
 import com.google.cloud.kafka.connect.bigtable.config.NullValueMode;
 import com.google.cloud.kafka.connect.bigtable.utils.ByteUtils;
 import com.google.protobuf.ByteString;
@@ -38,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaAndValue;
 import org.apache.kafka.connect.data.SchemaBuilder;
@@ -69,7 +72,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -81,7 +84,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -93,7 +96,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -105,7 +108,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -117,7 +120,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -129,7 +132,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -141,7 +144,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -153,7 +156,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -165,7 +168,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -177,7 +180,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -189,7 +192,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, date);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -201,7 +204,7 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.IGNORE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expected);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expected);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
 
@@ -215,7 +218,6 @@ public class ValueMapperTest {
         .setCell(
             DEFAULT_COLUMN_FAMILY,
             DEFAULT_COLUMN_BYTES,
-            TIMESTAMP,
             ByteString.copyFrom("[\"1\",2,true]".getBytes(StandardCharsets.UTF_8)));
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
@@ -233,7 +235,6 @@ public class ValueMapperTest {
           .setCell(
               DEFAULT_COLUMN_FAMILY,
               DEFAULT_COLUMN_BYTES,
-              TIMESTAMP,
               ByteString.copyFrom(ByteUtils.toBytes(value)));
     }
     ValueMapper mapper =
@@ -243,7 +244,6 @@ public class ValueMapperTest {
         .setCell(
             DEFAULT_COLUMN_FAMILY,
             DEFAULT_COLUMN_BYTES,
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(value)));
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
@@ -261,7 +261,6 @@ public class ValueMapperTest {
         .setCell(
             DEFAULT_COLUMN_FAMILY,
             ByteString.copyFrom(key.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(value)));
 
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
@@ -272,12 +271,12 @@ public class ValueMapperTest {
     String topic = "TOPIC";
     String value = "value";
     ValueMapper mapper = new TestValueMapper("${topic}", DEFAULT_COLUMN, NullValueMode.WRITE);
-    MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, value, topic);
+    MutationDataBuilder mutationDataBuilder =
+        getRecordMutationDataBuilder(mapper, value, topic, InsertMode.INSERT);
     verify(mutationDataBuilder, times(1))
         .setCell(
             topic,
             DEFAULT_COLUMN_BYTES,
-            TIMESTAMP,
             ByteString.copyFrom(value.getBytes(StandardCharsets.UTF_8)));
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
@@ -319,13 +318,11 @@ public class ValueMapperTest {
         .setCell(
             setColumnFamily,
             ByteString.copyFrom(setColumn.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(value)));
     verify(mutationDataBuilder, times(1))
         .setCell(
             DEFAULT_COLUMN_FAMILY,
             ByteString.copyFrom(setRoot.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(rootValue)));
     verify(mutationDataBuilder, times(1))
         .deleteCells(
@@ -370,8 +367,7 @@ public class ValueMapperTest {
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, outerMap);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, expectedJsonificationBytes);
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, expectedJsonificationBytes);
   }
 
   @Test
@@ -426,7 +422,6 @@ public class ValueMapperTest {
         .setCell(
             outerField,
             ByteString.copyFrom(innerField.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             expectedStringificationBytes);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
   }
@@ -495,21 +490,20 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.DELETE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, struct);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, valueFieldNameBytes, TIMESTAMP, ByteString.copyFrom(value));
+        .setCell(DEFAULT_COLUMN_FAMILY, valueFieldNameBytes, ByteString.copyFrom(value));
     verify(mutationDataBuilder, times(1)).deleteFamily(optionalFieldName);
     verify(mutationDataBuilder, times(1))
-        .setCell(structFieldName, valueFieldNameBytes, TIMESTAMP, ByteString.copyFrom(value));
+        .setCell(structFieldName, valueFieldNameBytes, ByteString.copyFrom(value));
     verify(mutationDataBuilder, times(1))
         .deleteCells(
             structFieldName, optionalFieldNameBytes, Range.TimestampRange.create(0, TIMESTAMP));
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            structFieldName,
-            structFieldNameBytes,
-            TIMESTAMP,
-            expectedInnermostStringificationBytes);
+        .setCell(structFieldName, structFieldNameBytes, expectedInnermostStringificationBytes);
     assertTotalNumberOfInvocations(mutationDataBuilder, 5);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -542,10 +536,12 @@ public class ValueMapperTest {
         .setCell(
             outerField,
             ByteString.copyFrom(innerField.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(value)));
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -571,10 +567,12 @@ public class ValueMapperTest {
         .setCell(
             outerField,
             ByteString.copyFrom(middleField.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(
                 ("{\"" + innerField + "\":" + value + "}").getBytes(StandardCharsets.UTF_8)));
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -590,10 +588,12 @@ public class ValueMapperTest {
         .setCell(
             DEFAULT_COLUMN_FAMILY,
             ByteString.copyFrom(field.getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             ByteString.copyFrom(ByteUtils.toBytes(value)));
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -659,22 +659,44 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.DELETE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, outerStruct);
     verify(mutationDataBuilder, times(1)).deleteFamily(familyToBeDeleted);
-    verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, valueKeyBytes, TIMESTAMP, valueBytes);
+    verify(mutationDataBuilder, times(1)).setCell(DEFAULT_COLUMN_FAMILY, valueKeyBytes, valueBytes);
     verify(mutationDataBuilder, times(1))
         .deleteCells(
             outerStructKey.toString(),
             columnToBeDeletedBytes,
             Range.TimestampRange.create(0, TIMESTAMP));
     verify(mutationDataBuilder, times(1))
-        .setCell(outerStructKey.toString(), valueKeyBytes, TIMESTAMP, valueBytes);
+        .setCell(outerStructKey.toString(), valueKeyBytes, valueBytes);
     verify(mutationDataBuilder, times(1))
         .setCell(
             outerStructKey.toString(),
             ByteString.copyFrom(innerStructKey.toString().getBytes(StandardCharsets.UTF_8)),
-            TIMESTAMP,
             expectedJsonificationBytes);
     assertTotalNumberOfInvocations(mutationDataBuilder, 5);
+  }
+
+  @Test
+  public void testCreateMutationDataBuilder() {
+    ValueMapper mapper =
+        new ValueMapper(DEFAULT_COLUMN, DEFAULT_COLUMN_FAMILY, NullValueMode.IGNORE);
+    assertTrue(
+        mapper
+            .createMutationDataBuilder(InsertMode.INSERT, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY)
+            .isEmpty());
+    assertTrue(
+        mapper
+            .createMutationDataBuilder(InsertMode.UPSERT, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY)
+            .isEmpty());
+
+    Optional<MutationData> maybeMutationData =
+        mapper
+            .createMutationDataBuilder(InsertMode.REPLACE_IF_NEWEST, TIMESTAMP)
+            .maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    // It's not empty, because it contains a deleteRow.
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -712,9 +734,12 @@ public class ValueMapperTest {
         new TestValueMapper(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN, NullValueMode.WRITE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, null);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, TIMESTAMP, ByteString.empty());
+        .setCell(DEFAULT_COLUMN_FAMILY, DEFAULT_COLUMN_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -724,13 +749,12 @@ public class ValueMapperTest {
     MutationDataBuilder mutationDataBuilder =
         getRecordMutationDataBuilder(mapper, getStructWithNullOnNthNestingLevel(1));
     verify(mutationDataBuilder, times(1))
-        .setCell(
-            DEFAULT_COLUMN_FAMILY,
-            NESTED_NULL_STRUCT_FIELD_NAME_BYTES,
-            TIMESTAMP,
-            ByteString.empty());
+        .setCell(DEFAULT_COLUMN_FAMILY, NESTED_NULL_STRUCT_FIELD_NAME_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -741,12 +765,12 @@ public class ValueMapperTest {
         getRecordMutationDataBuilder(mapper, getStructWithNullOnNthNestingLevel(2));
     verify(mutationDataBuilder, times(1))
         .setCell(
-            NESTED_NULL_STRUCT_FIELD_NAME,
-            NESTED_NULL_STRUCT_FIELD_NAME_BYTES,
-            TIMESTAMP,
-            ByteString.empty());
+            NESTED_NULL_STRUCT_FIELD_NAME, NESTED_NULL_STRUCT_FIELD_NAME_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -756,7 +780,10 @@ public class ValueMapperTest {
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, null);
     verify(mutationDataBuilder, times(1)).deleteRow();
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -767,7 +794,10 @@ public class ValueMapperTest {
         getRecordMutationDataBuilder(mapper, getStructWithNullOnNthNestingLevel(1));
     verify(mutationDataBuilder, times(1)).deleteFamily(NESTED_NULL_STRUCT_FIELD_NAME);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -780,7 +810,10 @@ public class ValueMapperTest {
         .deleteCells(
             NESTED_NULL_STRUCT_FIELD_NAME, NESTED_NULL_STRUCT_FIELD_NAME_BYTES, TIMESTAMP_RANGE);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -796,10 +829,12 @@ public class ValueMapperTest {
         .setCell(
             NESTED_NULL_STRUCT_FIELD_NAME,
             NESTED_NULL_STRUCT_FIELD_NAME_BYTES,
-            TIMESTAMP,
             expectedJsonificationBytes);
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   @Test
@@ -809,21 +844,24 @@ public class ValueMapperTest {
             ConfigInterpolation.TOPIC_PLACEHOLDER, DEFAULT_COLUMN, NullValueMode.WRITE);
     MutationDataBuilder mutationDataBuilder = getRecordMutationDataBuilder(mapper, null);
     verify(mutationDataBuilder, times(1))
-        .setCell(DEFAULT_TOPIC, DEFAULT_COLUMN_BYTES, TIMESTAMP, ByteString.empty());
+        .setCell(DEFAULT_TOPIC, DEFAULT_COLUMN_BYTES, ByteString.empty());
     assertTotalNumberOfInvocations(mutationDataBuilder, 1);
-    assertTrue(mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY).isPresent());
+    Optional<MutationData> maybeMutationData =
+        mutationDataBuilder.maybeBuild(TARGET_TABLE_NAME, ROW_KEY);
+    assertTrue(maybeMutationData.isPresent());
+    assertEquals(TIMESTAMP.longValue(), maybeMutationData.get().getTimestampMicros());
   }
 
   private MutationDataBuilder getRecordMutationDataBuilder(ValueMapper mapper, Object kafkaValue) {
-    return getRecordMutationDataBuilder(mapper, kafkaValue, DEFAULT_TOPIC);
+    return getRecordMutationDataBuilder(mapper, kafkaValue, DEFAULT_TOPIC, InsertMode.UPSERT);
   }
 
   private MutationDataBuilder getRecordMutationDataBuilder(
-      ValueMapper mapper, Object kafkaValue, String topic) {
+      ValueMapper mapper, Object kafkaValue, String topic, InsertMode insertMode) {
     // We use `null` in this test since our code for now uses  Schema only to warn the user when an
     // unsupported logical type is encountered.
     SchemaAndValue schemaAndValue = new SchemaAndValue(null, kafkaValue);
-    return mapper.getRecordMutationDataBuilder(schemaAndValue, topic, TIMESTAMP);
+    return mapper.getRecordMutationDataBuilder(schemaAndValue, topic, insertMode, TIMESTAMP);
   }
 
   private static class TestValueMapper extends ValueMapper {
@@ -834,8 +872,9 @@ public class ValueMapperTest {
     }
 
     @Override
-    protected MutationDataBuilder createMutationDataBuilder() {
-      return spy(super.createMutationDataBuilder());
+    protected MutationDataBuilder createMutationDataBuilder(
+        InsertMode insertMode, long timestampMicros) {
+      return spy(super.createMutationDataBuilder(insertMode, timestampMicros));
     }
   }
 }
