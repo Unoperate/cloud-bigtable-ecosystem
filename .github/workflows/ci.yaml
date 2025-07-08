@@ -18,7 +18,7 @@ jobs:
         run: mvn -B -ntp spotless:check
       - name: Unit tests
         working-directory: kafka-connect-bigtable-sink
-        run: mvn -B -ntp -pl '!integration-tests' clean test
+        run: mvn -B -ntp clean test
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
