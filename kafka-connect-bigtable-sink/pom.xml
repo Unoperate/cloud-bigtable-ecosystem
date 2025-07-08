@@ -132,4 +132,11 @@
             </plugin>
         </plugins>
     </reporting>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Unoperate Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Unoperate/cloud-bigtable-ecosystem</url>
+        </repository>
+    </distributionManagement>
 </project>
