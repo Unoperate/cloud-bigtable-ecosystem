@@ -20,6 +20,7 @@ jobs:
       - name: Unit tests
         run: mvn -f kafka-connect-bigtable-sink -B -ntp clean test
       - name: Push to GitHub Maven
+        # If the version has already been pushed to the repo, it will NOT be overwritten by this deploy.
         # Note that we need to publish the parent too - otherwise maven will struggle to download the sink jar.
         run: mvn -s .github/m2.settings.xml -f kafka-connect-bigtable-sink -pl '!integration-tests' -B -ntp deploy -DskipUnitTests -DskipIntegrationTests
         env:
