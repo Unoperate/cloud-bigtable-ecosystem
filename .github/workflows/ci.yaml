@@ -1,0 +1,33 @@
+name: Sink CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  ci:
+    name: Check the code
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Spotless
+        working-directory: kafka-connect-bigtable-sink
+        run: mvn -B -ntp spotless:check
+      - name: Unit tests
+        working-directory: kafka-connect-bigtable-sink
+        run: mvn -B -ntp -pl '!integration-tests' clean test
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: latest
+          install_components: beta,bigtable
+      - name: Integration tests
+        working-directory: kafka-connect-bigtable-sink
+        # TODO: run the integration tests against a real Cloud Bigtable instance and remove the ignored tests.
+        run: |
+          set -euo pipefail
+          gcloud beta emulators bigtable start --host-port=0.0.0.0:8086 &
+          mvn -B -ntp verify -DskipUnitTests -Dit.test='!ResourceAutoCreationIT#testRowDeletionCreatesTableWhenAutoCreationEnabled,!ErrorHandlingIT#testTooLargeData,!ResourceAutoCreationIT#testCreationOfInvalidTable'

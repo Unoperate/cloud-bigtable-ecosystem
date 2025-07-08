@@ -1,0 +1,25 @@
+name: Publish sink
+
+on:
+  workflow_dispatch:
+  # TODO: get rid of it before merging it to some main branch
+  push:
+    branches:
+      - kafka_connect_bigtable_sink_replace_mode_ci
+
+jobs:
+  ci:
+    name: Publish sink to GitHub Maven
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Spotless
+        run: mvn -f kafka-connect-bigtable-sink -B -ntp spotless:check
+      - name: Unit tests
+        run: mvn -f kafka-connect-bigtable-sink -B -ntp clean test
+      - name: Push to GitHub Maven
+        # Note that we need to publish the parent too - otherwise maven will struggle to download the sink jar.
+        run: mvn -s .github/m2.settings.xml -f kafka-connect-bigtable-sink -pl '!integration-tests' -B -ntp deploy -DskipUnitTests -DskipIntegrationTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
