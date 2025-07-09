@@ -3,7 +3,7 @@ name: Kafka Connect Bigtable Sink CI
 on:
   push:
     branches:
-      - main
+      - ac/kafka_connect_bigtable_sink_ci_test
     paths:
       - "kafka-connect-bigtable-sink/**"
 
