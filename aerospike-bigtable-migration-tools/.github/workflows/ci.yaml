@@ -10,16 +10,36 @@ on:
 
 jobs:
   ci:
-    name: "Code checks"
+    name: Code checks
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - shell: bash
+      - name: C formatter
         run: |
           shopt -s globstar
           clang-format --dry-run --Werror -style=file -assume-filename=.clang-format **/*.c
-      - run: mvn spotless:check
+      - name: Java formatter
+        run: mvn -B -ntp spotless:check
       # TODO: test other submodules
-      - run: mvn clean test -pl adapter
-
+      - name: Java unit tests
+        run: mvn -B -ntp test -pl adapter,replicator
+      # TODO: Download the sink .jar from maven once Google starts publishing it.
+      - name: Create integration_test_plugins dir and necessary subdirectories
+        run: mkdir -p replicator/integration_test_plugins/sink
+      - name: Download sink .jar
+        run: mvn -s .github/m2.settings.xml -B -ntp dependency:copy -Dartifact=com.google.cloud.kafka.connect.bigtable:sink:1.0.0-SNAPSHOT:jar:jar-with-dependencies -DoutputDirectory=replicator/integration_test_plugins/sink
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show integration_test_plugins dir contents
+        run: tree --du replicator/integration_test_plugins
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: latest
+          install_components: beta,bigtable
+      - name: Integration tests
+        run: |
+          set -euo pipefail
+          gcloud beta emulators bigtable start --host-port=0.0.0.0:8086 &
+          mvn -B -ntp verify -pl adapter,replicator -DskipUnitTests

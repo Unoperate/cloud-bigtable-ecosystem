@@ -42,6 +42,16 @@ data into Cloud Bigtable using the `adapter`.
 
 ______________________________________________________________________
 
+### 3. Replicator
+
+The `replicator` module is a Kafka Connect Single Message Transformation responsible for converting Aerospike
+[XDR JSON Kafka messages](https://aerospike.com/docs/connectors/streaming/common/formats/json-serialization-format/)
+into messages ingestible by [Kafka Connect Bigtable Sink](https://github.com/GoogleCloudPlatform/cloud-bigtable-ecosystem/tree/main/kafka-connect-bigtable-sink).
+
+It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
+
+______________________________________________________________________
+
 ## Development Environment
 
 ### Using the Devcontainer
