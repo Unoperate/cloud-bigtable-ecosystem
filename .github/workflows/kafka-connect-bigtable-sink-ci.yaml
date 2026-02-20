@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Formatter
         working-directory: kafka-connect-bigtable-sink
-        run: mvn -B -ntp spotless:check
+        run: mvn -Pintegration-tests -B -ntp  spotless:check
       - name: Unit tests
         working-directory: kafka-connect-bigtable-sink
         run: mvn -B -ntp clean test
@@ -31,4 +31,4 @@ jobs:
         run: |
           set -euo pipefail
           gcloud beta emulators bigtable start --host-port=0.0.0.0:8086 &
-          BIGTABLE_EMULATOR_HOST=localhost:8086 mvn -B -ntp verify -DskipUnitTests -Dit.test='!ResourceAutoCreationIT#testRowDeletionCreatesTableWhenAutoCreationEnabled,!ErrorHandlingIT#testTooLargeData,!ResourceAutoCreationIT#testCreationOfInvalidTable'
+          BIGTABLE_EMULATOR_HOST=localhost:8086 mvn -Pintegration-tests -B -ntp verify -Dit.test='!ResourceAutoCreationIT#testRowDeletionCreatesTableWhenAutoCreationEnabled,!ErrorHandlingIT#testTooLargeData,!ResourceAutoCreationIT#testCreationOfInvalidTable'
