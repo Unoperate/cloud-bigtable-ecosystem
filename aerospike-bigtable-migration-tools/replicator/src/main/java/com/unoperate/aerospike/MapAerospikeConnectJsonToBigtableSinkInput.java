@@ -242,11 +242,11 @@ public class MapAerospikeConnectJsonToBigtableSinkInput<R extends ConnectRecord<
             msg,
             KEY_FIELD,
             List.class,
-            "Field '" + TYPE_FIELD + "' is missing.",
-            "Field '" + TYPE_FIELD + "' is not a JSON array.");
+            "Field '" + KEY_FIELD + "' is missing.",
+            "Field '" + KEY_FIELD + "' is not a JSON array.");
     if (keyArray.size() != 4) {
       throw new InvalidMessageException(
-          "Field '" + TYPE_FIELD + "' does not have exactly 4 fields.");
+          "Field '" + KEY_FIELD + "' does not have exactly 4 fields.");
     }
 
     Object maybeDigestB64 = keyArray.get(2);
