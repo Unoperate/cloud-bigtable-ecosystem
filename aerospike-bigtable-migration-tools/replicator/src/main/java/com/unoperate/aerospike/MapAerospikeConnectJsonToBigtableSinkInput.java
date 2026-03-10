@@ -32,8 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Transform a {@link org.apache.kafka.connect.json.JsonConverter}-deserialized Aerospike Connect
- * JSON-formatted XDR message into {@see
+ * Transform a {@link org.apache.kafka.connect.json.JsonConverter}-deserialized Aerospike Connect <a
+ * href="https://aerospike.com/docs/connectors/streaming/kafka/outbound/formats/json-serialization-format">
+ * JSON-formatted XDR message<a/> into {@see
  * com.google.cloud.kafka.connect.bigtable.BigtableSinkConnector} input to stream changes from
  * Aerospike into Cloud Bigtable.
  *
@@ -55,6 +56,7 @@ public class MapAerospikeConnectJsonToBigtableSinkInput<R extends ConnectRecord<
   public static final String BIN_TYPE_FIELD = "type";
   public static final String BIN_VALUE_FIELD = "value";
   public static final String KEY_FIELD = "key";
+  public static final int KEY_FIELD_DIGEST_IDX = 2;
   public static final int DIGEST_LENGTH = 20;
   private static final Logger log =
       LoggerFactory.getLogger(MapAerospikeConnectJsonToBigtableSinkInput.class);
@@ -249,7 +251,7 @@ public class MapAerospikeConnectJsonToBigtableSinkInput<R extends ConnectRecord<
           "Field '" + KEY_FIELD + "' does not have exactly 4 fields.");
     }
 
-    Object maybeDigestB64 = keyArray.get(2);
+    Object maybeDigestB64 = keyArray.get(KEY_FIELD_DIGEST_IDX);
     try {
       if (maybeDigestB64 instanceof String digestB64) {
         byte[] digest = Base64.getDecoder().decode(digestB64);
