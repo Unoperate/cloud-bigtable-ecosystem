@@ -110,8 +110,7 @@ ______________________________________________________________________
 
 ## Notes
 
-Inside the `backup-loader` we have two directories `aerospike` and `aerospike-backup-tools`
-which contain Dockerfiles and utility files used for development.
+Inside the `backup-loader` we a directory `aerospike` which contains utility files used for development.
 
 ### Compilation
 

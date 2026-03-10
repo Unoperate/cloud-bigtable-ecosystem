@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 {
-  "name": "C",
+  "name": "aerospike-migration-tools",
   "build": {
-    // Path is relative to the devcontainer.json file.
-    "dockerfile": "Dockerfile",
+    "dockerfile": "../Dockerfile",
     "target": "builder"
   },
-  // Features to add to the dev container. More info: https://containers.dev/features.
-  // "features": {},
   "customizations": {
     "vscode": {
       "settings": {
