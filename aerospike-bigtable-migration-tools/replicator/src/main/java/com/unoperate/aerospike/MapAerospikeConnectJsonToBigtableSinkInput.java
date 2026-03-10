@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Transform a {@link org.apache.kafka.connect.json.JsonConverter}-deserialized Aerospike Connect <a
  * href="https://aerospike.com/docs/connectors/streaming/kafka/outbound/formats/json-serialization-format">
- * JSON-formatted XDR message<a/> into {@see
+ * JSON-formatted XDR message</a> into {@see
  * com.google.cloud.kafka.connect.bigtable.BigtableSinkConnector} input to stream changes from
  * Aerospike into Cloud Bigtable.
  *
