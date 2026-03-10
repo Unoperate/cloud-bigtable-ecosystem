@@ -97,11 +97,11 @@ public class MapAerospikeConnectJsonToBigtableSinkInput<R extends ConnectRecord<
    *
    * @param record a {@link org.apache.kafka.connect.json.JsonConverter}-deserialized Aerospike
    *     Connect JSON-formatted XDR message
-   * @throws InvalidMessageException if the message is invalid.
    * @return {@code null} if the input message has last update timestamp lower than value configured
    *     by {@link Config#START_LUT_MILLIS}, an {@link R} mapped to a {@see
    *     com.google.cloud.kafka.connect.bigtable.BigtableSinkConnector} input equivalent to
    *     Aerospike values from {@code record}.
+   * @throws InvalidMessageException if the message is invalid.
    */
   @Override
   public R apply(R record) {
