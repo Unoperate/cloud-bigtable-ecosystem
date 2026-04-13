@@ -120,7 +120,7 @@ ______________________________________________________________________
 
 ## Notes
 
-Inside the `backup-loader` we a directory `aerospike` which contains utility files used for development.
+Inside the `backup-loader` there is a directory `aerospike` which contains utility files used for development.
 
 ### Compilation
 
