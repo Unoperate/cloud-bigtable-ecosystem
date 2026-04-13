@@ -2,7 +2,7 @@ set shell := ["bash", "-o", "pipefail", "-eEuc"]
 
 export BIGTABLE_EMULATOR_HOST := "localhost:8086"
 
-c_src := "backup-loader/src/main/c/com_unoperate_aerospike_BackupReader.c"
+c_src := "backup-loader/src/main/c/com_google_cloud_aerospike_BackupReader.c"
 
 default:
     @just --list
@@ -14,7 +14,7 @@ run-emulator:
     docker run -p 127.0.0.1:8086:8086 --rm -ti $@ google/cloud-sdk gcloud beta emulators bigtable start --host-port=0.0.0.0:8086
 
 run-backup-loader:
-    mvn -Pall clean compile exec:java -Dexec.mainClass=com.unoperate.aerospike.LoadBackupExample -Dexec.jvmArgs="-Djava.library.path=target/classes:/usr/lib:/usr/local/lib"
+    mvn -Pall clean compile exec:java -Dexec.mainClass=com.google.cloud.aerospike.LoadBackupExample -Dexec.jvmArgs="-Djava.library.path=target/classes:/usr/lib:/usr/local/lib"
 
 build:
     mvn clean compile
@@ -29,7 +29,7 @@ format: && clang-format
     mvn clean spotless:apply
 
 pull-dependencies:
-    mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline -DexcludeGroupIds=com.unoperate.aerospike
+    mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline -DexcludeGroupIds=com.google.cloud.aerospike
 
 package:
     mvn clean package -Dmaven.test.skip
@@ -71,7 +71,7 @@ test-memory-leak:
         -Djava.library.path=target/classes:/usr/lib:/usr/local/lib \
         -Djava.compiler=NONE \
         -cp "$(cat backup-loader-example/cp.txt):backup-loader-example/target/backup-loader-example-1.0.0-SNAPSHOT.jar" \
-        com.unoperate.aerospike.TestForLeaks \
+        com.google.cloud.aerospike.TestForLeaks \
             <(python3 backup-loader-example/generate-large-backup.py 10000)
     jeprof --focus BackupReader --show_bytes --pdf `which java` jeprof.*.f.heap > java.pdf
 
@@ -86,5 +86,5 @@ test-local-references-limit:
         -Djava.library.path=target/classes:/usr/lib:/usr/local/lib \
         -Djava.compiler=NONE \
         -cp "$(cat backup-loader-example/cp.txt):backup-loader-example/target/backup-loader-example-1.0.0-SNAPSHOT.jar" \
-        com.unoperate.aerospike.TestForLeaks \
+        com.google.cloud.aerospike.TestForLeaks \
             <(python3 backup-loader-example/generate-backup-with-large-entry.py 100000)
