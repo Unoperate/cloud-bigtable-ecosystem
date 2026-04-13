@@ -25,19 +25,20 @@ jobs:
       - name: Java formatter
         working-directory: aerospike-bigtable-migration-tools
         run: mvn -B -ntp spotless:check
-      # TODO: test other submodules
+      # TODO: test other submodules (e.g., backup-loader), which require dependencies compiled as described in the Dockerfile.
       - name: Java unit tests
         working-directory: aerospike-bigtable-migration-tools
         run: mvn -B -ntp test -pl adapter,replicator
+      # Replicator's integration tests need to be provided with Kafka Connect Bigtable Sink .jar
       # TODO: Download the sink .jar from maven once Google starts publishing it.
+      - name: Compile sink .jar
+        working-directory: kafka-connect-bigtable-sink
+        run: mvn -B -ntp clean package -pl sink -DskipUnitTests -DskipIntegrationTests
       - name: Create integration_test_plugins dir and necessary subdirectories
         working-directory: aerospike-bigtable-migration-tools
         run: mkdir -p replicator/integration_test_plugins/sink
-      - name: Download sink .jar
-        working-directory: aerospike-bigtable-migration-tools
-        run: mvn -s .github/aerospike-migration-tools-m2.settings.xml -B -ntp dependency:copy -Dartifact=com.google.cloud.kafka.connect.bigtable:sink:1.0.0-SNAPSHOT:jar:jar-with-dependencies -DoutputDirectory=replicator/integration_test_plugins/sink
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy sink .jar into directory used by replicator's integration tests
+        run: cp kafka-connect-bigtable-sink/sink/target/sink*.jar aerospike-bigtable-migration-tools/replicator/integration_test_plugins/sink
       - name: Show integration_test_plugins dir contents
         working-directory: aerospike-bigtable-migration-tools
         run: tree --du replicator/integration_test_plugins
