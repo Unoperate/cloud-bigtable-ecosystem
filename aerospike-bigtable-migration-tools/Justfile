@@ -54,14 +54,14 @@ build-template jar project bucket name:
         --sdk-language JAVA \
         --flex-template-base-image JAVA17 \
         --jar {{ jar }} \
-        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.google.cloud.teleport.v2.templates.AerospikeToBigtable" \
+        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.google.cloud.teleport.v2.templates.AerospikeBackupToBigtable" \
         --project {{ project }}
 
 # just run-template prawilny-dataflowtemplates aerospike-backup-to-bigtable "gs://prawilny-dataflowtemplates/input/backup*.asb" gs://prawilny-dataflowtemplates/errors/first.error
 # TODO: write use_runner_v2 within the template itself
 run-template bucket name input_path output_path:
     gcloud dataflow flex-template run \
-        "{{ name }}-$(date +%FT%T)" \
+        "{{ name }}-$(date +%F-%H-%M-%S)" \
         --template-file-gcs-location gs://{{ bucket }}/templates/{{ name }}.json \
         --region europe-central2 \
         --project unoperate-test \
