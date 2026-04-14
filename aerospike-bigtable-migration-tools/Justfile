@@ -46,6 +46,16 @@ lint-python:
 fix-python:
     find . -name "*.py" -print0 | xargs -0 python -m black
 
+build-template jar project bucket name:
+    gcloud dataflow flex-template build \
+        gs://{{ bucket }}/templates/{{ name }}.json \
+        --image-gcr-path europe-central2-docker.pkg.dev/unoperate-test/prawilny-dataflowtemplates/{{ name }}:latest \
+        --sdk-language JAVA \
+        --flex-template-base-image JAVA17 \
+        --jar {{ jar }} \
+        --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.google.cloud.teleport.v2.templates.AerospikeToBigtable" \
+        --project {{ project }}
+
 clang-tidy:
     clang-tidy --config-file=.clang-tidy {{ c_src }} -- \
         -isystem "$(dirname $(dirname $(readlink -f $(which javac))))/include" \
