@@ -46,6 +46,7 @@ lint-python:
 fix-python:
     find . -name "*.py" -print0 | xargs -0 python -m black
 
+# just build-template aerospike-backup-to-bigtable-1.0-SNAPSHOT.jar unoperate-test prawilny-dataflowtemplates aerospike-backup-to-bigtable
 build-template jar project bucket name:
     gcloud dataflow flex-template build \
         gs://{{ bucket }}/templates/{{ name }}.json \
@@ -55,6 +56,27 @@ build-template jar project bucket name:
         --jar {{ jar }} \
         --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.google.cloud.teleport.v2.templates.AerospikeToBigtable" \
         --project {{ project }}
+
+# just run-template aerospike-backup-to-bigtable gs://prawilny-dataflowtemplates/input/backup*.asb gs://prawilny-dataflowtemplates/errors/first.error
+# TODO: write use_runner_v2 within the template itself
+run-template name input_path output_path:
+    gcloud dataflow flex-template run \
+        "{{ name }}-$(date +%FT%T)" \
+        --template-file-gcs-location gs://{{ bucket }}/templates/{{ name }}.json \
+        --region europe-central2 \
+        --project unoperate-test \
+        --num-workers 1 \
+        --max-workers 1 \
+        --additional-experiments use_runner_v2 \
+        --parameters \
+    sdkContainerImage=europe-central2-docker.pkg.dev/unoperate-test/prawilny-dataflowtemplates/{{ name }}:latest,\
+    bigtableWriteInsatnceId=TODO,\
+    bigtableWriteTableId=TODO,\
+    srcNamespace=TODO,\
+    bigtableBulkWriteMaxRowKeyCount=5,
+    outputPath=gs://prawilny-dataflowtemplates/input/data
+    inputFilePattern={{ input_path }},\
+    outputPath={{ output_path }}
 
 clang-tidy:
     clang-tidy --config-file=.clang-tidy {{ c_src }} -- \
