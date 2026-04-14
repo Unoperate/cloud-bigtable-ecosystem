@@ -102,6 +102,7 @@ FROM builder AS compiled
 COPY adapter /src/adapter
 COPY Justfile /src/Justfile
 COPY backup-loader /src/backup-loader
+COPY replicator /src/replicator
 COPY pom.xml /src/pom.xml
 RUN cd /src && \
     just build
