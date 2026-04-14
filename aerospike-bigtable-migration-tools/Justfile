@@ -57,9 +57,9 @@ build-template jar project bucket name:
         --env FLEX_TEMPLATE_JAVA_MAIN_CLASS="com.google.cloud.teleport.v2.templates.AerospikeToBigtable" \
         --project {{ project }}
 
-# just run-template aerospike-backup-to-bigtable gs://prawilny-dataflowtemplates/input/backup*.asb gs://prawilny-dataflowtemplates/errors/first.error
+# just run-template prawilny-dataflowtemplates aerospike-backup-to-bigtable "gs://prawilny-dataflowtemplates/input/backup*.asb" gs://prawilny-dataflowtemplates/errors/first.error
 # TODO: write use_runner_v2 within the template itself
-run-template name input_path output_path:
+run-template bucket name input_path output_path:
     gcloud dataflow flex-template run \
         "{{ name }}-$(date +%FT%T)" \
         --template-file-gcs-location gs://{{ bucket }}/templates/{{ name }}.json \
