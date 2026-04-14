@@ -44,5 +44,8 @@
     "--network=host",
     "--cap-add=SYS_PTRACE"
   ],
+  "mounts": [
+    "source=/home/prawilny/Unoperate/google/DataflowTemplates,target=/dataflow,type=bind,consistency=cached"
+  ],
   "remoteUser": "root"
 }
