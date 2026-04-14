@@ -161,3 +161,88 @@ dependencies.
   configured to do so. The dockerfile provided here has that option enabled.
   That is why example backups made with this configuration located in the
   aerospike folder contain keys.
+
+# TODO: describe backup-loader's compilation more closely
+
+# Dataflow (TODO: word it better)
+## Docker image:
+```bash
+just build-worker-image TODOURL 2.65.0
+docker push TODOURL:2.65.0
+```
+
+## Replicator jar
+```
+cd aerospike-migration-tools
+mvn -pl adapter,replicator package
+```
+
+## Sink jar
+- TODO: see readme at kafka-connect-bigtable-sink
+
+## Dataflow template
+Within docker (with dataflow sources mounted at `/dataflow`):
+
+- TODO: also mount local directory under `/dataflow/v2/aerospike-backup-to-bigtable/target`
+- TODO: wrap it into a justfile recipe
+- TODO: do some kind of ~/.m2 caching - otherwise there'll be problems with slow build
+
+```bash
+cd aerospike-migration-tools
+just install
+cd /dataflow
+mvn package -DskipTests -pl v2/aerospike-backup-to-bigtable -am
+```
+
+## Dependency tree (TODO: REMOVE)
+```mermaid
+flowchart
+
+%% Sources
+AsBackupSources
+BackupLoaderJNISources
+
+DataflowTemplateSources
+
+%% Java artifacts
+BackupLoaderJar
+AdapterJar
+ReplicatorJar
+
+SinkJar
+
+%% Dataflow
+DataflowDocker
+DataflowTemplate
+
+%% External beings
+Bigtable
+Aerospike
+AerospikeOutboundConnector
+Kafka
+
+%% Native compilation
+ManyLibs -->|Linking| AsBackupLib
+AsBackupSources -->|Compilation with our Makefile| AsBackupLib -->|Linking| BackupLoaderLib
+BackupLoaderJNISources -->|Compilation| BackupLoaderLib
+
+%% Native to upper layers
+BackupLoaderLib -->|RequiredBy| BackupLoaderJar
+BackupLoaderLib -->|PresentIn| DataflowDocker
+DataflowDocker -->|UsedBy| DataflowTemplate
+
+%% Java dependencies
+AdapterJar -->|RequiredBy| BackupLoaderJar
+AdapterJar -->|RequiredBy| ReplicatorJar
+BackupLoaderJar -->|CompiledInto| DataflowFatjar
+
+DataflowTemplateSources -->|Compilation| DataflowFatjar
+DataflowFatjar --> DataflowTemplate
+
+
+subgraph Flow
+    Aerospike -->|BackupWith| AsBackupBin -->|UploadTo| GCS -->|Load| DataflowTemplate -->|Write| Bigtable
+
+    Aerospike -->|Change Stream| AerospikeOutboundConnector -->|Write| Kafka -->|Read| ReplicatorJar -->|Filter and convert| SinkJar -->|Write| Bigtable
+end
+```
