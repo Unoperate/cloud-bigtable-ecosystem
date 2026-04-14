@@ -75,9 +75,10 @@ run-template bucket name input_path output_path:
     bigtableWriteInstanceId=prawilny-test,\
     bigtableWriteTableId=table-test,\
     srcNamespace=test,\
-    bigtableBulkWriteMaxRowKeyCount=5,
     inputFilePattern={{ input_path }},\
-    outputPath={{ output_path }}
+    outputPath={{ output_path }},\
+    bigtableBulkWriteMaxRowKeyCount=5
+
 
 clang-tidy:
     clang-tidy --config-file=.clang-tidy {{ c_src }} -- \
