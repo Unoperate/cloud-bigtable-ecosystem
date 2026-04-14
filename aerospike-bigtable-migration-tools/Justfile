@@ -71,7 +71,7 @@ run-template bucket name input_path output_path:
         --additional-experiments use_runner_v2 \
         --parameters \
     sdkContainerImage=europe-central2-docker.pkg.dev/unoperate-test/prawilny-dataflowtemplates/{{ name }}:latest,\
-    bigtableWriteInsatnceId=TODO,\
+    bigtableWriteInstanceId=TODO,\
     bigtableWriteTableId=TODO,\
     srcNamespace=TODO,\
     bigtableBulkWriteMaxRowKeyCount=5,
