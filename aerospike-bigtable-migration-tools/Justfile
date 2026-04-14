@@ -76,7 +76,6 @@ run-template bucket name input_path output_path:
     bigtableWriteTableId=table-test,\
     srcNamespace=test,\
     bigtableBulkWriteMaxRowKeyCount=5,
-    outputPath=gs://prawilny-dataflowtemplates/input/data
     inputFilePattern={{ input_path }},\
     outputPath={{ output_path }}
 
