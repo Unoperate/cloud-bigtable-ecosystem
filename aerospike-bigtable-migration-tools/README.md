@@ -246,3 +246,103 @@ subgraph Flow
     Aerospike -->|Change Stream| AerospikeOutboundConnector -->|Write| Kafka -->|Read| ReplicatorJar -->|Filter and convert| SinkJar -->|Write| Bigtable
 end
 ```
+
+# Migration from Aerospike to Cloud Bigtable
+
+For a high-level overview of the process, see [Migrate from Aerospike to Bigtable document](TODO), this section documents how to obtain the executables needed for the process.
+
+## Dataflow template `AerospikeBackupToBigtable`
+
+<!-- TODO: link to Google-owned repo -->
+[A fork of DataflowTemplates contains `AerospikeBackupToBigtable`](https://github.com/Unoperate/DataflowTemplates/tree/kb/aerospike2/v2/aerospike-backup-to-bigtable), a Dataflow template that can be used to load data from Aerospike backups into Cloud Bigtable.
+
+Note that it uses `backup-reader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Bigtable ones.
+
+### How to use it
+
+#### Build and push the worker image
+In this step we build OCI image used by Dataflow worker nodes to run the actual work on.
+
+CAUTION: Use the tag matching the `beam.version` property of the root pom.xml from the Dataflow repository!
+```bash
+just build-worker-image $REGISTRY/$IMAGE_NAME-worker $VERSION
+docker push $REGISTRY/$IMAGE_NAME-worker:$VERSION
+```
+
+#### Build and stage the template
+In this step we build and publish (into buckets and registries configured by the arguments):
+- fat jar of the Dataflow template
+- OCI image of Dataflow template's job manager (which coordinates the worker nodes)
+- JSON descriptor of the Dataflow template (it points to the job manager image and contains some metadata such as the template's arguments and their description)
+
+##### Authentication
+Note that this action needs to upload data to GCP using Application Default credentials.
+It is also to be run in a Docker container (due to `backup-reader`'s dependencies), so you need to ensure that the process in the container is authenticated.
+
+If you're running on GCP, you can just pass `--dns=169.254.169.254` argument to `docker run` command - see the command below to verify that the IP is correct and that Application Default Credentials use the expected service account:
+```bash
+docker run --dns=169.254.169.254 --rm curlimages/curl curl -sH "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/email
+```
+
+If you're running outside of it, follow the [README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
+
+##### Build
+Build the container:
+```bash
+docker build . --target compiled -t aerospike-bigtable-migration-tools
+```
+
+Note that the build process of Dataflow pulls a large number of dependencies, so you might want to add flag such as `-v ./.m2:/root/.m2` to avoid redownloading them all if you end up needing to build it more than once.
+
+Also mind the `--dns` flag described in [Authentication](#authentication) section.
+
+Clone the `DataflowTemplates` repo somewhere and start the container with:
+```bash
+docker run --rm -it -v PATH_TO_DATAFLOW_TEMPLATES_REPO:/dataflow aerospike-migration-tools
+```
+Then within it run:
+```bash
+# Install Java packages of `aerospike-bigtable-migration-tools` into local maven repository.
+just install
+# Now do the operations on the Dataflow template.
+cd /dataflow
+mvn package -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -Dimage=$REGISTRY/$IMAGE_NAME -pl v2/aerospike-backup-to-bigtable -am
+```
+
+#### Run the template
+After executing the steps described, there should be:
+- `$REGISTRY/$IMAGE_NAME` - job manager image
+- `$REGISTRY/$IMAGE_NAME:$VERSION` - worker image
+- `gs://$BUCKET_NAME/templates/flex/Aerospike_Backup_To_Bigtable` - Dataflow template's descriptor
+
+To run it:
+- go to https://console.cloud.google.com/dataflow/createjob
+- pick `Custom template` as Dataflow template
+- paste or pick the path to the Dataflow template descriptor
+- fill in the template's parameters
+- **[IMPORTANT]** Fill "SDK Container Image" field under "Optional parameters" with `$REGISTRY/$IMAGE_NAME-worker:$VERSION`
+
+Alternatively you can do the same using `gcloud dataflow flex-template run` command or Terraform provider.
+In any case, remember to use the worker image!
+
+## Kafka Connect tools
+
+You can set up a Kafka Connect pipeline consisting of:
+- [`org.apache.kafka.connect.json.JsonConverter`](https://github.com/apache/kafka/blob/trunk/connect/json/src/main/java/org/apache/kafka/connect/json/JsonConverter.java),
+- [`MapAerospikeConnectJsonToBigtableSinkInput`](replicator/src/main/java/com/google/cloud/aerospike/MapAerospikeConnectJsonToBigtableSinkInput.java),
+- [`BigtableSinkConnector`](../kafka-connect-bigtable-sink/sink/src/main/java/com/google/cloud/kafka/connect/bigtable/BigtableSinkConnector.java).
+
+It will respectively:
+- deserialize [JSON-formatted Aerospike Outbound Connector's messages](https://aerospike.com/docs/connectors/streaming/kafka/outbound/formats/json-serialization-format),
+- filter records older than some threshold and map their Aerospike values into Bigtable ones,
+- write the mapped Bigtable values into Cloud Bigtable.
+
+### `replicator.jar` containing `MapAerospikeConnectJsonToBigtableSinkInput`
+Run:
+```bash
+mvn clean package -pl adapter,replicator -DskipUnitTests
+```
+Copy the fat .jar from `replicator/target`.
+
+### `sink.jar` containing `BigtableSinkConnector`
+See the README from [../kafka-connect-bigtable-sink/README.md](../kafka-connect-bigtable-sink/README.md).
