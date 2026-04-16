@@ -311,8 +311,8 @@ mvn package -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=
 
 #### Run the template
 After executing the steps described, there should be:
-- `$REGISTRY/$IMAGE_NAME` - job manager image
-- `$REGISTRY/$IMAGE_NAME:$VERSION` - worker image
+- `$REGISTRY/templates/$IMAGE_NAME` - job manager image
+- `$REGISTRY/$IMAGE_NAME-worker:$VERSION` - worker image
 - `gs://$BUCKET_NAME/templates/flex/Aerospike_Backup_To_Bigtable` - Dataflow template's descriptor
 
 To run it:
