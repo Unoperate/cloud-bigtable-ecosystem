@@ -306,7 +306,7 @@ Then within it run:
 just install
 # Now do the operations on the Dataflow template.
 cd /dataflow
-mvn package -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -Dimage=$REGISTRY/$IMAGE_NAME -pl v2/aerospike-backup-to-bigtable -am
+mvn package -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -DartifactRegistry=$REGISTRY/$IMAGE_NAME -pl v2/aerospike-backup-to-bigtable -am
 ```
 
 #### Run the template
