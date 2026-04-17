@@ -8,7 +8,7 @@ The project consists of the following Maven submodules:
 
 ### Adapter
 Defines an encoding of Aerospike entities as Bigtable entities and provides utilities for doing the conversion.
-It is intended to be used by all the migration tools (including `replicator` and `backup-reader` described below) to ensure that the data mapping is consistent between them.
+It is intended to be used by all the migration tools (including `replicator` and `backup-loader` described below) to ensure that the data mapping is consistent between them.
 
 The important classes are:
 - [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the encoding of Aerospike entities into Bigtable ones.
@@ -30,8 +30,8 @@ Note that it is implemented by interfacing with the official [`aerospike-tools-b
 #### Dependencies
 The Java `BackupReader` class requires a compiled native shared library to be present on the host (see [Dockerfile](Dockerfile)'s `dataflow-worker` target for an example how to satisfy this requirement).
 
-The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of `backup-reader` will fail if the requirements are not met.
-In practice, `backup-reader` can only be built in the Docker container of the project.
+The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of `backup-loader` will fail if the requirements are not met.
+In practice, `backup-loader` can only be built in the Docker container of the project.
 
 All the other modules are pure Java and easy to build in any environment with supported Java and Maven versions.
 
@@ -61,7 +61,7 @@ Building just the backup reader (and its dependencies):
 just run-mvn backup-loader compile
 ```
 
-Running the backup loader example (note that it's only likely to run within the [container](#docker-container) due to [backup-reader's requirements](#dependencies)):
+Running the backup loader example (note that it's only likely to run within the [container](#docker-container) due to [backup-loader's requirements](#dependencies)):
 ```bash
 just run-emulator & # On the host, within the container there's no `docker`
 just run-backup-loader
@@ -103,7 +103,7 @@ This section documents how to obtain the binary artifacts needed for the process
 <!-- TODO: link to template -->
 [A fork of DataflowTemplates contains `AerospikeBackupToBigtable`](TODO), a Dataflow template that can be used to load data from Aerospike backups into Cloud Bigtable.
 
-Note that it uses `backup-reader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Bigtable ones.
+Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Bigtable ones.
 
 ### How to use it
 
@@ -124,7 +124,7 @@ In this step we build and publish (into buckets and registries configured by the
 
 ##### Authentication
 Note that this action needs to upload data to GCP using Application Default credentials.
-It is also to be run in a Docker container (due to `backup-reader`'s dependencies), so you need to ensure that the process in the container is authenticated.
+It is also to be run in a Docker container (due to `backup-loader`'s dependencies), so you need to ensure that the process in the container is authenticated.
 
 If you're running on GCP, you can just pass `--dns=169.254.169.254` argument to `docker run` command - see the command below to verify that the IP is correct and that Application Default Credentials use the expected service account:
 ```bash
