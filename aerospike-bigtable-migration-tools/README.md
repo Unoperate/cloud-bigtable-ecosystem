@@ -2,9 +2,6 @@
 This project provides tools for migrating data from Aerospike to Cloud
 Bigtable.
 
-## Document describing migration process
-For details on the whole process of migration see [Migrate from Aerospike to Bigtable document](TODO).
-
 ## Submodules
 The primary tool used for managing this project is Maven.
 
@@ -27,7 +24,7 @@ into messages ingestible by [Kafka Connect Bigtable Sink](https://github.com/Goo
 It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
 
 ### Backup Loader
-[`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
+Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
 
 Note that it is implemented by interfacing with the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library using Java Native Interface.
 
@@ -83,7 +80,8 @@ To generate a backup, start an Aerospike server:
 just run-aerospike
 ```
 
-Next run the seeding script. It will populate the database with some rows.
+Next run the seeding script.
+It will populate the database with some rows.
 ```bash
 pip install aerospike==16.0.1
 python seed_aerospike.py
@@ -100,8 +98,7 @@ It has to be configured to do so, the [config](backup-loader-example/aerospike/c
 That is why example backups made with this configuration located in the `backup-loader-example/aerospike/example_files` folder contain keys.
 
 # Process of migration from Aerospike to Cloud Bigtable
-
-For a high-level overview of the process, see [the relevant section](#document-describing-migration-process), this section documents how to obtain the executables needed for the process.
+This section documents how to obtain the binary artifacts needed for the process of migration from Aerospike to Cloud Bigtable.
 
 ## Dataflow template `AerospikeBackupToBigtable`
 
