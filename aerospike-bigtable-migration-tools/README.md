@@ -131,7 +131,7 @@ If you're running on GCP, you can just pass `--dns=169.254.169.254` argument to 
 docker run --dns=169.254.169.254 --rm curlimages/curl curl -sH "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/email
 ```
 
-If you're running outside of it, follow the [README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
+If you're running outside of it, follow the [official README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
 
 ##### Build
 Build the container:
