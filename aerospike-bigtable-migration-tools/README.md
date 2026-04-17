@@ -13,7 +13,7 @@ The primary tool used for managing this project is Maven.
 The project consists of the following Maven submodules:
 
 ### Adapter
-Defines a transformation of Aerospike entities into Cloud Bigtable entities and provides utilities for doing the conversion.
+Defines the transformation of Aerospike entities into Cloud Bigtable entities and provides utilities for performing it.
 It is intended to be used by all the migration tools (including `replicator` and `backup-loader` described below) to ensure that the data mapping is consistent between them.
 
 The important classes are:
