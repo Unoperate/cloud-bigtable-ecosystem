@@ -28,10 +28,14 @@ import com.google.cloud.bigtable.data.v2.models.Query;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.protobuf.ByteString;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +112,7 @@ public class LoadBackupExample {
 
       String pipePath = "my_fifo";
 
-      SubProcess createPipe = new SubProcess("mkfifo", pipePath);
+      SubProcess createPipe = new SubProcess(new String[] {"mkfifo", pipePath});
       createPipe.start(true);
       LOG.info("pipe created");
 
@@ -117,7 +121,7 @@ public class LoadBackupExample {
             try (InputStream input =
                     new FileInputStream(
                         "backup-loader/aerospike/example_files/backup_advanced_types.asb");
-                FileOutputStream pipe = new FileOutputStream(this.pipe)) {
+                FileOutputStream pipe = new FileOutputStream(pipePath)) {
               LOG.info("file streaming");
               input.transferTo(pipe);
             } catch (IOException e) {
