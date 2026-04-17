@@ -4,8 +4,8 @@ This project provides tools for migrating data from Aerospike to Cloud Bigtable.
 ## High level overview of the process
 The process consists of three parts:
 - Backup migration - import an Aerospike backup into Cloud Bigtable (see [Dataflow template section](#dataflow-template-aerospikebackuptobigtable) for details),
-- Streaming changes - replicate ongoing updates from Aerospike to Bigtable (see [Kafka Connect tools section](#kafka-connect-tools) for details),
-- Cutover - switch the application to use Bigtable as the database.
+- Streaming changes - replicate ongoing updates from Aerospike to Cloud Bigtable (see [Kafka Connect tools section](#kafka-connect-tools) for details),
+- Cutover - switch the application to use Cloud Bigtable as the database.
 
 ## Submodules
 The primary tool used for managing this project is Maven.
@@ -13,12 +13,12 @@ The primary tool used for managing this project is Maven.
 The project consists of the following Maven submodules:
 
 ### Adapter
-Defines a transformation of Aerospike entities into Bigtable entities and provides utilities for doing the conversion.
+Defines a transformation of Aerospike entities into Cloud Bigtable entities and provides utilities for doing the conversion.
 It is intended to be used by all the migration tools (including `replicator` and `backup-loader` described below) to ensure that the data mapping is consistent between them.
 
 The important classes are:
-- [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the transformation of Aerospike entities into Bigtable ones.
-- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder allowing the user to create Bigtable mutations transforming input Aerospike records into Bigtable rows,
+- [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the transformation of Aerospike entities into Cloud Bigtable ones.
+- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder allowing the user to create Cloud Bigtable mutations transforming input Aerospike records into Cloud Bigtable rows,
 - [`AerospikeRecord`](adapter/src/main/java/com/google/cloud/aerospike/AerospikeRecord.java): A utility for transforming Cloud Bigtable rows into Aerospike-like records.
 
 ### Replicator
@@ -109,7 +109,7 @@ This section documents how to obtain the binary artifacts needed for the process
 <!-- TODO: link to template -->
 [A fork of DataflowTemplates contains `AerospikeBackupToBigtable`](TODO), a Dataflow template that can be used to load data from Aerospike backups into Cloud Bigtable.
 
-Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Bigtable ones.
+Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Cloud Bigtable ones.
 
 ### How to use it
 
@@ -187,8 +187,8 @@ You can set up a Kafka Connect pipeline consisting of:
 
 It will respectively:
 - deserialize [JSON-formatted Aerospike Outbound Connector's messages](https://aerospike.com/docs/connectors/streaming/kafka/outbound/formats/json-serialization-format),
-- filter records older than some threshold and map their Aerospike values into Bigtable ones,
-- write the mapped Bigtable values into Cloud Bigtable.
+- filter records older than some threshold and transform their Aerospike values into Cloud Bigtable ones,
+- write the transformed Cloud Bigtable values into Cloud Bigtable.
 
 ### `replicator.jar` containing `MapAerospikeConnectJsonToBigtableSinkInput`
 Run:
