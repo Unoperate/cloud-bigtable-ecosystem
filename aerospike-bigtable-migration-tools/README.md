@@ -13,12 +13,12 @@ The primary tool used for managing this project is Maven.
 The project consists of the following Maven submodules:
 
 ### Adapter
-Defines a transformation of Aerospike entities as Bigtable entities and provides utilities for doing the conversion.
+Defines a transformation of Aerospike entities into Bigtable entities and provides utilities for doing the conversion.
 It is intended to be used by all the migration tools (including `replicator` and `backup-loader` described below) to ensure that the data mapping is consistent between them.
 
 The important classes are:
 - [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the transformation of Aerospike entities into Bigtable ones.
-- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder allowing the user to create Bigtable mutations transforming input Aerospike records as Bigtable rows,
+- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder allowing the user to create Bigtable mutations transforming input Aerospike records into Bigtable rows,
 - [`AerospikeRecord`](adapter/src/main/java/com/google/cloud/aerospike/AerospikeRecord.java): A utility for transforming Cloud Bigtable rows into Aerospike-like records.
 
 ### Replicator
