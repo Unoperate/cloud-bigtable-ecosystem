@@ -100,6 +100,7 @@ This section documents how to obtain the binary artifacts needed for the process
 
 ## Dataflow template `AerospikeBackupToBigtable`
 
+<!-- TODO: link to template -->
 [A fork of DataflowTemplates contains `AerospikeBackupToBigtable`](TODO), a Dataflow template that can be used to load data from Aerospike backups into Cloud Bigtable.
 
 Note that it uses `backup-reader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Bigtable ones.
