@@ -28,10 +28,9 @@ Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospi
 Note that it is implemented by interfacing with the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library using Java Native Interface.
 
 #### Dependencies
-The Java `BackupReader` class requires a compiled native shared library to be present on the host.
+The Java `BackupReader` class requires a compiled native shared library to be present on the host (see [Dockerfile](Dockerfile)'s `dataflow-worker` target for an example how to satisfy this requirement).
 
 The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of `backup-reader` will fail if the requirements are not met.
-
 In practice, `backup-reader` can only be built in the Docker container of the project.
 
 All the other modules are pure Java and easy to build in any environment with supported Java and Maven versions.
