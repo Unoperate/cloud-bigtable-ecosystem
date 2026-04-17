@@ -24,7 +24,7 @@ jobs:
           clang-format --dry-run --Werror -style=file -assume-filename=.clang-format **/*.c
       - name: Java formatter
         working-directory: aerospike-bigtable-migration-tools
-        run: mvn -B -ntp spotless:check
+        run: mvn -B -ntp -Pall spotless:check
       # TODO: test other submodules (e.g., backup-loader), which require dependencies compiled as described in the Dockerfile.
       - name: Java unit tests
         working-directory: aerospike-bigtable-migration-tools
