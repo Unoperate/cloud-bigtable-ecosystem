@@ -123,7 +123,7 @@ docker push $REGISTRY/$IMAGE_NAME-worker:$VERSION
 
 #### Build and stage the template
 In this step we build and publish (into buckets and registries configured by the arguments):
-- Fat jar of the Dataflow template
+- Uber-jar of the Dataflow template
 - OCI image of Dataflow template's job manager (which coordinates the worker nodes)
 - JSON descriptor of the Dataflow template (it points to the job manager image and contains some metadata such as the template's arguments and their description)
 
@@ -148,7 +148,7 @@ Note that the build process of Dataflow pulls a large number of dependencies, so
 
 Also mind the `--dns` flag described in [Authentication](#authentication) section.
 
-Clone the `DataflowTemplates` repo somewhere and start the container with:
+Clone the `DataflowTemplates` repo and start the container with:
 ```bash
 docker run --rm -it -v PATH_TO_DATAFLOW_TEMPLATES_REPO:/dataflow aerospike-migration-tools
 ```
@@ -194,7 +194,7 @@ Run:
 ```bash
 mvn clean package -pl adapter,replicator -DskipUnitTests
 ```
-Copy the fat .jar from `replicator/target`.
+Copy the .jar from `replicator/target`.
 
 ### `sink.jar` containing `BigtableSinkConnector`
 See the README from [../kafka-connect-bigtable-sink/README.md](../kafka-connect-bigtable-sink/README.md).
