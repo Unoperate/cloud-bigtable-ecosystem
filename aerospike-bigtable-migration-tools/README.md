@@ -164,60 +164,7 @@ dependencies.
 
 # TODO: describe backup-loader's compilation more closely
 
-## Dependency tree (TODO: REMOVE)
-```mermaid
-flowchart
-
-%% Sources
-AsBackupSources
-BackupLoaderJNISources
-
-DataflowTemplateSources
-
-%% Java artifacts
-BackupLoaderJar
-AdapterJar
-ReplicatorJar
-
-SinkJar
-
-%% Dataflow
-DataflowDocker
-DataflowTemplate
-
-%% External beings
-Bigtable
-Aerospike
-AerospikeOutboundConnector
-Kafka
-
-%% Native compilation
-ManyLibs -->|Linking| AsBackupLib
-AsBackupSources -->|Compilation with our Makefile| AsBackupLib -->|Linking| BackupLoaderLib
-BackupLoaderJNISources -->|Compilation| BackupLoaderLib
-
-%% Native to upper layers
-BackupLoaderLib -->|RequiredBy| BackupLoaderJar
-BackupLoaderLib -->|PresentIn| DataflowDocker
-DataflowDocker -->|UsedBy| DataflowTemplate
-
-%% Java dependencies
-AdapterJar -->|RequiredBy| BackupLoaderJar
-AdapterJar -->|RequiredBy| ReplicatorJar
-BackupLoaderJar -->|CompiledInto| DataflowFatjar
-
-DataflowTemplateSources -->|Compilation| DataflowFatjar
-DataflowFatjar --> DataflowTemplate
-
-
-subgraph Flow
-    Aerospike -->|BackupWith| AsBackupBin -->|UploadTo| GCS -->|Load| DataflowTemplate -->|Write| Bigtable
-
-    Aerospike -->|Change Stream| AerospikeOutboundConnector -->|Write| Kafka -->|Read| ReplicatorJar -->|Filter and convert| SinkJar -->|Write| Bigtable
-end
-```
-
-# Migration from Aerospike to Cloud Bigtable
+# Process of migration from Aerospike to Cloud Bigtable
 
 For a high-level overview of the process, see [Migrate from Aerospike to Bigtable document](TODO), this section documents how to obtain the executables needed for the process.
 
