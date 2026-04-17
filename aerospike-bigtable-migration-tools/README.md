@@ -1,6 +1,12 @@
 # Aerospike Migration Tools
 This project provides tools for migrating data from Aerospike to Cloud Bigtable.
 
+## High level overview of the process
+The process consists of three parts:
+- Backup migration - import an Aerospike backup into Cloud Bigtable (see [Dataflow template section](#dataflow-template-aerospikebackuptobigtable) for details),
+- Streaming changes - replicate ongoing updates from Aerospike to Bigtable (see [Kafka Connect tools section](#kafka-connect-tools) for details),
+- Cutover - switch the application to use Bigtable as the database.
+
 ## Submodules
 The primary tool used for managing this project is Maven.
 
