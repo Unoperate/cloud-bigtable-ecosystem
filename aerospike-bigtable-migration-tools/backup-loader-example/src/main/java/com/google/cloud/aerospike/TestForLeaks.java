@@ -16,37 +16,35 @@
 package com.google.cloud.aerospike;
 
 import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TestForLeaks {
-    private static final Logger LOG = LoggerFactory.getLogger(TestForLeaks.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestForLeaks.class);
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        if (args.length != 1) {
-            throw new IllegalArgumentException("USAGE: <java> FILE_PATH");
-        }
-
-        try (BackupReader br = new BackupReader(args[0], BackupReader.CompressionAlgorithm.NONE)) {
-            for (long i = 0; true; i += 1) {
-                if (i % 10000 == 0) {
-                    LOG.info("Progress: {}", i);
-                }
-
-                try {
-                    ReadRecordResult result = br.readRecord("test");
-                    if (result == null) {
-                        LOG.info("Successful end of reading!");
-                        break;
-                    }
-                } catch (Throwable t) {
-                    LOG.debug("Error while reading.", t);
-                }
-            }
-        } catch (Throwable t) {
-            LOG.error("Unexpected exception caught.", t);
-        }
+  public static void main(String[] args) throws IOException, InterruptedException {
+    if (args.length != 1) {
+      throw new IllegalArgumentException("USAGE: <java> FILE_PATH");
     }
-}
 
+    try (BackupReader br = new BackupReader(args[0], BackupReader.CompressionAlgorithm.NONE)) {
+      for (long i = 0; true; i += 1) {
+        if (i % 10000 == 0) {
+          LOG.info("Progress: {}", i);
+        }
+
+        try {
+          ReadRecordResult result = br.readRecord("test");
+          if (result == null) {
+            LOG.info("Successful end of reading!");
+            break;
+          }
+        } catch (Throwable t) {
+          LOG.debug("Error while reading.", t);
+        }
+      }
+    } catch (Throwable t) {
+      LOG.error("Unexpected exception caught.", t);
+    }
+  }
+}

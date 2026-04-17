@@ -15,6 +15,10 @@
  */
 package com.google.cloud.aerospike;
 
+import com.google.cloud.aerospike.exceptions.JNIException;
+import com.google.cloud.aerospike.exceptions.MalformedBackupDataException;
+import com.google.cloud.aerospike.exceptions.UnsupportedBackupEntryException;
+import com.google.cloud.aerospike.values.Value;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminClient;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminSettings;
 import com.google.cloud.bigtable.admin.v2.models.CreateTableRequest;
@@ -24,10 +28,6 @@ import com.google.cloud.bigtable.data.v2.models.Query;
 import com.google.cloud.bigtable.data.v2.models.Row;
 import com.google.cloud.bigtable.data.v2.models.RowCell;
 import com.google.protobuf.ByteString;
-import com.google.cloud.aerospike.exceptions.JNIException;
-import com.google.cloud.aerospike.exceptions.MalformedBackupDataException;
-import com.google.cloud.aerospike.exceptions.UnsupportedBackupEntryException;
-import com.google.cloud.aerospike.values.Value;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -108,19 +108,22 @@ public class LoadBackupExample {
 
       String pipePath = "my_fifo";
 
-      SubProcess createPipe = new SubProcess(new String[] {"/usr/bin/mkfifo", pipePath});
+      SubProcess createPipe = new SubProcess("mkfifo", pipePath);
       createPipe.start(true);
       LOG.info("pipe created");
 
-      SubProcess streamProcess =
-          new SubProcess(
-              new String[] {
-                "sh",
-                "-c",
-                "cat backup-loader/aerospike/example_files/backup_advanced_types.asb > " + pipePath
-              });
-      streamProcess.start(false);
-      LOG.info("file streaming");
+      CompletableFuture.runAsync(
+          () -> {
+            try (InputStream input =
+                    new FileInputStream(
+                        "backup-loader/aerospike/example_files/backup_advanced_types.asb");
+                FileOutputStream pipe = new FileOutputStream(this.pipe)) {
+              LOG.info("file streaming");
+              input.transferTo(pipe);
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
 
       try (BackupReader br = new BackupReader(pipePath, BackupReader.CompressionAlgorithm.NONE)) {
         while (true) {

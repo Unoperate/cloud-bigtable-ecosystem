@@ -26,7 +26,7 @@ test case="*":
     mvn clean test -Dtest="{{ case }}" -Dsurefire.failIfNoSpecifiedTests=false
 
 format: && clang-format
-    mvn clean spotless:apply
+    mvn -Pall clean spotless:apply
 
 pull-dependencies:
     mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline -DexcludeGroupIds=com.google.cloud.aerospike
