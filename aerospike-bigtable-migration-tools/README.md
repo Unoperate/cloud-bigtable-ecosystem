@@ -29,16 +29,16 @@ It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
 ### Backup Loader
 [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
 
-Note that it is implemented using the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library interfacing with it using Java Native Interface.
+Note that it is implemented by interfacing with the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library using Java Native Interface.
 
 #### Dependencies
 The Java `BackupReader` class requires a compiled native shared library to be present on the host.
 
-The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of this whole module will fail if the requirements are not met.
+The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of `backup-reader` will fail if the requirements are not met.
 
 In practice, `backup-reader` can only be built in the Docker container of the project.
 
-All the other modules are pure Java easy to build in any environment with supported Java and Maven versions.
+All the other modules are pure Java and easy to build in any environment with supported Java and Maven versions.
 
 ### Backup Loader Examples
 Contains runnable snippets exemplifying use of `BackupReader` and some scripts and config files useful for generating the backups needed for testing.
