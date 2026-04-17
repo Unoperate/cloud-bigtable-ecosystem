@@ -8,7 +8,7 @@ default:
     @just --list
 
 run-aerospike:
-    docker run --rm -v ./backup-loader/aerospike/config:/etc/aerospike/ -p 3000:3000 -p 3001:3001 -p 3002:3002 aerospike/aerospike-server:8.0.0.5_1
+    docker run --rm -v ./backup-loader-example/aerospike/config:/etc/aerospike/ -p 3000:3000 -p 3001:3001 -p 3002:3002 aerospike/aerospike-server:8.0.0.5_1
 
 run-emulator:
     docker run -p 127.0.0.1:8086:8086 --rm -ti $@ google/cloud-sdk gcloud beta emulators bigtable start --host-port=0.0.0.0:8086
