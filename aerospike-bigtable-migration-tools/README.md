@@ -1,6 +1,5 @@
 # Aerospike Migration Tools
-This project provides tools for migrating data from Aerospike to Cloud
-Bigtable.
+This project provides tools for migrating data from Aerospike to Cloud Bigtable.
 
 ## Submodules
 The primary tool used for managing this project is Maven.
