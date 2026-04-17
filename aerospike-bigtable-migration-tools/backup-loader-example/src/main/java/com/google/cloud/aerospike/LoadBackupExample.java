@@ -116,18 +116,18 @@ public class LoadBackupExample {
       createPipe.start(true);
       LOG.info("pipe created");
 
-      CompletableFuture.runAsync(
-          () -> {
-            try (InputStream input =
-                    new FileInputStream(
-                        "backup-loader/aerospike/example_files/backup_advanced_types.asb");
-                FileOutputStream pipe = new FileOutputStream(pipePath)) {
-              LOG.info("file streaming");
-              input.transferTo(pipe);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          });
+      String backupPath = "backup-loader-example/aerospike/example_files/backup_advanced_types.asb";
+      CompletableFuture<Void> fileStreaming =
+          CompletableFuture.runAsync(
+              () -> {
+                try (InputStream input = new FileInputStream(backupPath);
+                    FileOutputStream pipe = new FileOutputStream(pipePath)) {
+                  LOG.info("file streaming");
+                  input.transferTo(pipe);
+                } catch (IOException e) {
+                  throw new RuntimeException(e);
+                }
+              });
 
       try (BackupReader br = new BackupReader(pipePath, BackupReader.CompressionAlgorithm.NONE)) {
         while (true) {
@@ -180,6 +180,7 @@ public class LoadBackupExample {
                     + cell.getTimestamp());
           }
         }
+        fileStreaming.get();
       } catch (Throwable t) {
         LOG.error("Unexpected exception caught.", t);
       } finally {
