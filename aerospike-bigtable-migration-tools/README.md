@@ -164,36 +164,6 @@ dependencies.
 
 # TODO: describe backup-loader's compilation more closely
 
-# Dataflow (TODO: word it better)
-## Docker image:
-```bash
-just build-worker-image TODOURL 2.65.0
-docker push TODOURL:2.65.0
-```
-
-## Replicator jar
-```
-cd aerospike-migration-tools
-mvn -pl adapter,replicator package
-```
-
-## Sink jar
-- TODO: see readme at kafka-connect-bigtable-sink
-
-## Dataflow template
-Within docker (with dataflow sources mounted at `/dataflow`):
-
-- TODO: also mount local directory under `/dataflow/v2/aerospike-backup-to-bigtable/target`
-- TODO: wrap it into a justfile recipe
-- TODO: do some kind of ~/.m2 caching - otherwise there'll be problems with slow build
-
-```bash
-cd aerospike-migration-tools
-just install
-cd /dataflow
-mvn package -DskipTests -pl v2/aerospike-backup-to-bigtable -am
-```
-
 ## Dependency tree (TODO: REMOVE)
 ```mermaid
 flowchart
@@ -263,7 +233,7 @@ Note that it uses `backup-reader` module for reading these files, so it uses `ad
 #### Build and push the worker image
 In this step we build OCI image used by Dataflow worker nodes to run the actual work on.
 
-CAUTION: Use the tag matching the `beam.version` property of the root pom.xml from the Dataflow repository!
+**CAUTION:** Use the tag matching the `beam.version` property of the root pom.xml from the Dataflow repository!
 ```bash
 just build-worker-image $REGISTRY/$IMAGE_NAME-worker $VERSION
 docker push $REGISTRY/$IMAGE_NAME-worker:$VERSION
