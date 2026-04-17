@@ -41,7 +41,7 @@ Contains runnable snippets exemplifying use of `BackupReader` and some scripts a
 ## [Docker container](Dockerfile)
 Provides:
 - All necessary dependencies for building and running the project,
-- Pre-installed tools like `maven`, `gcc`, `docker`, `/app/bin/asbackup`
+- Pre-installed tools like `maven`, `gcc`, `/app/bin/asbackup`
 
 It also documents how to build both the project and the dependencies.
 
@@ -63,7 +63,7 @@ just run-mvn backup-loader compile
 
 Running the backup loader example (note that it's only likely to run within the [container](#docker-container) due to [backup-reader's requirements](#dependencies)):
 ```bash
-just run-emulator &
+just run-emulator & # On the host, within the container there's no `docker`
 just run-backup-loader
 ```
 
@@ -75,7 +75,7 @@ just install
 ### Generating A Backup
 To generate a backup, start an Aerospike server:
 ```bash
-just run-aerospike
+just run-aerospike # On the host, within the container there's no `docker`
 ```
 
 Next run the seeding script.
