@@ -18,7 +18,7 @@ It is intended to be used by all the migration tools (including `replicator` and
 
 The important classes are:
 - [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the transformation of Aerospike entities into Cloud Bigtable ones.
-- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder allowing the user to create Cloud Bigtable mutations transforming input Aerospike records into Cloud Bigtable rows,
+- [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder of Cloud Bigtable mutations creating Cloud Bigtable rows from Aerospike records.
 - [`AerospikeRecord`](adapter/src/main/java/com/google/cloud/aerospike/AerospikeRecord.java): A utility for transforming Cloud Bigtable rows into Aerospike-like records.
 
 ### Replicator
