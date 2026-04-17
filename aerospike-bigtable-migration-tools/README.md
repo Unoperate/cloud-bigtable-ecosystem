@@ -31,18 +31,17 @@ It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
 ### Backup Loader
 Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
 
-Note that it is implemented by interfacing with the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library using Java Native Interface.
+Note that it is implemented by using the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library via Java Native Interface.
 
 #### Dependencies
 The Java `BackupReader` class requires a compiled native shared library to be present on the host (see [Dockerfile](Dockerfile)'s `dataflow-worker` target for an example how to satisfy this requirement).
 
-The build process of that library is quite involved (see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml) for details) and the compilation of `backup-loader` will fail if the requirements are not met.
-In practice, `backup-loader` can only be built in the Docker container of the project.
+`backup-loader` should be built in the Docker container of the project, for details see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml).
 
-All the other modules are pure Java and easy to build in any environment with supported Java and Maven versions.
+All the other modules are pure Java and can be built in any environment with supported Java and Maven versions.
 
 ### Backup Loader Examples
-Contains runnable snippets exemplifying use of `BackupReader` and some scripts and config files useful for generating the backups needed for testing.
+Contains runnable examples of BackupReader usage, along with scripts and config files for generating test backups.
 
 ## [Docker container](Dockerfile)
 Provides:
@@ -52,7 +51,7 @@ Provides:
 It also documents how to build both the project and the dependencies.
 
 ## Workflow
-[Justfile](./Justfile) is an index of interesting commands and shortcuts to running them.
+[Justfile](./Justfile) is an index of interesting commands and shortcuts for running them.
 
 Note that if you want to execute `mvn` commands directly, you should do so from the top directory.
 
