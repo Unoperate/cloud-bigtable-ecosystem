@@ -14,7 +14,7 @@ The project consists of the following Maven submodules:
 
 ### Adapter
 Defines the transformation of Aerospike entities into Cloud Bigtable entities and provides utilities for performing it.
-It is intended to be used by all the migration tools (including `replicator` and `backup-loader` described below) to ensure that the data mapping is consistent between them.
+It is intended to be used by all the migration tools (including `replicator`, `backup-loader`, and `dataflow-template` described below) to ensure that the data mapping is consistent between them.
 
 The important classes are:
 - [`RowBuilder`](adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java): The definition of the transformation of Aerospike entities into Cloud Bigtable ones.
@@ -32,6 +32,20 @@ It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
 Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
 
 Note that it is implemented by using the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library via Java Native Interface.
+
+### Dataflow Template
+Contains a Dataflow Flex Template that imports Aerospike backups from Google Cloud Storage into Cloud Bigtable.
+
+#### Template's dependencies
+Note that the template depends on some classes from [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) that aren't published in any Maven repository.
+We build them on our own.
+
+#### `BackupReader`'s Dependencies
+We're providing [`BackupReader`'s dependencies](#dependencies) with a [custom worker image](https://docs.cloud.google.com/dataflow/docs/guides/build-container-image) built [in a particular way](#build-and-push-the-worker-image).
+
+Note that the integration tests also require this image to be present (or the tests to be run with
+`-DdirectRunnerTest=1` on machine containing all the shared library dependencies) - see `sdkContainerImage` property
+in [pom.xml](pom.xml).
 
 #### Dependencies
 The Java `BackupReader` class requires a compiled native shared library to be present on the host (see [Dockerfile](Dockerfile)'s `dataflow-worker` target for an example how to satisfy this requirement).
