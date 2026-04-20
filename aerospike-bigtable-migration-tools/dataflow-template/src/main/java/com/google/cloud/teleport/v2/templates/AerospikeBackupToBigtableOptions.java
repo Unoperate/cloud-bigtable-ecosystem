@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2025 Google LLC
+ * Copyright 2025 Google LLC
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.google.cloud.teleport.v2.templates;
 
@@ -29,9 +29,10 @@ public interface AerospikeBackupToBigtableOptions extends PipelineOptions, Bigta
       order = 1,
       description = "Input files in Cloud Storage",
       helpText =
-          "The Cloud Storage file pattern to search for backup files. "
-              + "Aerospike backups may be split across multiple files; users can safely retry entire files containing "
-              + "failed writes, as Bigtable writes are idempotent and can be repeated without side effects.",
+          "The Cloud Storage file pattern to search for backup files. Aerospike backups may be"
+              + " split across multiple files; users can safely retry entire files containing"
+              + " failed writes, as Bigtable writes are idempotent and can be repeated without side"
+              + " effects.",
       example = "gs://mybucket/backup-*.asb")
   @Validation.Required
   String getInputFilePattern();
@@ -64,8 +65,9 @@ public interface AerospikeBackupToBigtableOptions extends PipelineOptions, Bigta
       order = 4,
       description = "Validate Table Schema Before Uploading",
       helpText =
-          "By default, the pipeline ensures that all required column families exist in the target Cloud Bigtable before"
-              + "starting the upload. This behavior can be disabled by setting this option to false.",
+          "By default, the pipeline ensures that all required column families exist in the target"
+              + " Cloud Bigtable beforestarting the upload. This behavior can be disabled by"
+              + " setting this option to false.",
       optional = true,
       hiddenUi = true)
   @Default.Boolean(true)
@@ -77,8 +79,9 @@ public interface AerospikeBackupToBigtableOptions extends PipelineOptions, Bigta
       order = 5,
       description = "Enable Bigtable Verbose Logging",
       helpText =
-          "When enabled (set to true), all individual write errors to Bigtable are logged. By default, "
-              + "only one error per batch is reported. Use with caution, as this may significantly increase log volume.",
+          "When enabled (set to true), all individual write errors to Bigtable are logged. By"
+              + " default, only one error per batch is reported. Use with caution, as this may"
+              + " significantly increase log volume.",
       optional = true,
       hiddenUi = true)
   @Default.Boolean(false)
@@ -112,10 +115,10 @@ public interface AerospikeBackupToBigtableOptions extends PipelineOptions, Bigta
       regexes = {"[a-z][a-z0-9\\-]+[a-z0-9]"},
       description = "Bigtable App Profile",
       helpText =
-          "The ID of the Bigtable application profile to use for the export. If you"
-              + " do not specify an app profile, Bigtable uses the"
-              + " default app profile (https://cloud.google.com/bigtable/docs/app-profiles#default-app-profile)"
-              + " of the instance.")
+          "The ID of the Bigtable application profile to use for the export. If you do not specify"
+              + " an app profile, Bigtable uses the default app profile"
+              + " (https://cloud.google.com/bigtable/docs/app-profiles#default-app-profile) of the"
+              + " instance.")
   @Default.String("default")
   String getBigtableWriteAppProfile();
 
