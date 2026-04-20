@@ -36,7 +36,8 @@ dataflow-stage project bucket image_registry image_name:
         -DbucketName="{{ bucket }}" \
         -DstagePrefix="templates" \
         -DtemplateName="AerospikeBackupToBigtable" \
-        -Dimage="{{ image_name }}/{{ image_name }}"
+        -DartifactRegistry="{{ image_registry }}" \
+        -Dimage="{{ image_name }}"
 
 build:
     mvn clean compile
