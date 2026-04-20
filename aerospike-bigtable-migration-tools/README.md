@@ -179,13 +179,12 @@ After executing the steps described, there should be:
 - `$REGISTRY/$IMAGE_NAME-worker:$VERSION` - worker image
 - `gs://$BUCKET_NAME/templates/flex/Aerospike_Backup_To_Bigtable` - Dataflow template's descriptor
 
-TODO: check it is up-to-date
-
 To run it:
 - go to https://console.cloud.google.com/dataflow/createjob
 - pick `Custom template` as Dataflow template
 - paste or pick the path to the Dataflow template descriptor
 - fill in the template's parameters
+    - remember that the Bigtable table you point it to must have all the column families listed in [RowBuilder](aerospike-bigtable-migration-tools/adapter/src/main/java/com/google/cloud/aerospike/RowBuilder.java) (at the time of writing, that is `OBJECT` and `SCALARS`)
 - **[IMPORTANT]** Fill "SDK Container Image" field under "Optional parameters" with `$REGISTRY/$IMAGE_NAME-worker:$VERSION`
 
 Alternatively you can do the same using `gcloud dataflow flex-template run` command or Terraform provider.
