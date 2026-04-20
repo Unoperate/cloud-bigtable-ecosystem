@@ -91,6 +91,14 @@ Installing `backup-loader` and `adapter` modules to the local Maven repository (
 just install
 ```
 
+Running `dataflow-template`'s integration test (for information about exact selection of [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) version see [the section about building the template](#build)):
+```
+# Ensure that all the template's dependencies are present.
+just install-dataflow-dependencies <PATH_TO_DATAFLOW_TEMPLATES_REPO>
+# Note that all the resources must already exist.
+just dataflow-local-it <GCP_REGION> <GCP_PROJECT> <GCS_BUCKET_NAME> <BIGTABLE_INSTANCE_ID>
+```
+
 ### Generating A Backup
 To generate a backup, start an Aerospike server:
 ```bash
@@ -162,7 +170,7 @@ Note that the build process of Dataflow pulls a large number of dependencies, so
 
 Also mind the `--dns` flag described in [Authentication](#authentication) section.
 
-Clone the `DataflowTemplates` repo and start the container with:
+Clone the `DataflowTemplates` repo at commit `47b6f87d3556c1bf690f5a6aa58c144d3049122b` and start the container with:
 ```bash
 docker run --rm -it -v PATH_TO_DATAFLOW_TEMPLATES_REPO:/dataflow aerospike-migration-tools
 ```

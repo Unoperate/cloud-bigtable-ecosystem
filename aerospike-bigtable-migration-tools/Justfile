@@ -16,6 +16,9 @@ run-emulator:
 run-backup-loader:
     mvn -Pall clean compile exec:java -Dexec.mainClass=com.google.cloud.aerospike.LoadBackupExample -Dexec.jvmArgs="-Djava.library.path=target/classes:/usr/lib:/usr/local/lib"
 
+install-dataflow-dependencies dataflow_templates_dir:
+    mvn -f "{{ dataflow_templates_dir }}/pom.xml" install -am -pl v2/bigtable-common,it/google-cloud-platform
+
 dataflow-local-it region project bucket bigtable_instance:
     BIGTABLE_EMULATOR_HOST="" mvn verify \
         -fae \
