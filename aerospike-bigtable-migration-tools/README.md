@@ -21,12 +21,16 @@ The important classes are:
 - [`BigtableMutationBuilder`](adapter/src/main/java/com/google/cloud/aerospike/BigtableMutationBuilder.java): A builder of Cloud Bigtable mutations creating Cloud Bigtable rows from Aerospike records.
 - [`AerospikeRecord`](adapter/src/main/java/com/google/cloud/aerospike/AerospikeRecord.java): A utility for transforming Cloud Bigtable rows into Aerospike-like records.
 
+This module is written in pure Java and has few dependencies, so it can be built in any environment with supported Java and Maven versions.
+
 ### Replicator
 A Kafka Connect Single Message Transformation responsible for converting Aerospike
 [XDR JSON Kafka messages](https://aerospike.com/docs/connectors/streaming/common/formats/json-serialization-format/)
 into messages ingestible by [Kafka Connect Bigtable Sink](https://github.com/GoogleCloudPlatform/cloud-bigtable-ecosystem/tree/main/kafka-connect-bigtable-sink).
 
 It's meant to be used for streaming Aerospike changes into Cloud Bigtable.
+
+This module is written in pure Java and only depends on some Kafka Connect `.jar`s, so it can be built in any environment with supported Java and Maven versions.
 
 ### Backup Loader
 Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospike/BackupReader.java), a reader of Aerospike backups.
@@ -38,8 +42,6 @@ The Java `BackupReader` class requires a compiled native shared library to be pr
 
 `backup-loader` should be built in the Docker container of the project, for details see [Dockerfile](Dockerfile) and [backup-loader's pom.xml](backup-loader/pom.xml).
 
-All the other modules are pure Java and can be built in any environment with supported Java and Maven versions.
-
 ### Backup Loader Examples
 Contains runnable examples of BackupReader usage, along with scripts and config files for generating test backups.
 
@@ -49,8 +51,7 @@ Contains a Dataflow Flex Template that imports Aerospike backups from Google Clo
 Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Cloud Bigtable ones.
 
 #### Template's dependencies
-Note that the template depends on some classes from [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) that aren't published in any Maven repository.
-We build (and install them into the local Maven repository) them on our own as you can see in the [Dockerfile](Dockerfile).
+The template should be built in the Docker container of the project since it depends on some classes from [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) that aren't published in any Maven repository and which we build (and install into the local Maven repository) in [Dockerfile](Dockerfile).
 
 #### `BackupReader`'s Dependencies
 We're providing [`BackupReader`'s dependencies](#dependencies) with a [custom worker image](https://docs.cloud.google.com/dataflow/docs/guides/build-container-image) built [in a particular way](#build-and-push-the-worker-image).
@@ -84,13 +85,13 @@ just run-mvn backup-loader compile
 
 TODO: running the tests (exclude the template somehow?)
 
-Running the backup loader example (note that it's only likely to run within the [container](#docker-container) due to [backup-loader's requirements](#dependencies)):
+Running the backup loader example (within the [container](#docker-container), see[backup-loader's requirements description](#dependencies) for details):
 ```bash
 just run-emulator & # On the host, within the container there's no `docker`
 just run-backup-loader
 ```
 
-Running `dataflow-template`'s integration test:
+Running `dataflow-template`'s integration test (within the [container](#docker-container), see[template's requirements description](#templates-dependencies) for details):
 ```
 # Note that all the cloud resources must already exist.
 just dataflow-local-it <GCP_REGION> <GCP_PROJECT> <GCS_BUCKET_NAME> <BIGTABLE_INSTANCE_ID>
@@ -152,7 +153,7 @@ docker run --dns=169.254.169.254 --rm curlimages/curl curl -sH "Metadata-Flavor:
 
 If you're running outside of it, follow the [official README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
 
-#### Build
+#### Build and stage the template
 Build the container:
 ```bash
 docker build . --target compiled -t aerospike-bigtable-migration-tools
