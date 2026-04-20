@@ -16,6 +16,7 @@
     <!-- Must match DataflowTemplates' Beam version! -->
     <truth.version>1.1.5</truth.version>
     <maven-jib.version>3.4.0</maven-jib.version>
+    <maven-shade.version>3.3.0</maven-shade.version>
   </properties>
 
   <dependencies>
@@ -81,6 +82,41 @@
           <parallel>classesAndMethods</parallel>
           <threadCount>5</threadCount>
         </configuration>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven-shade.version}</version>
+          <executions>
+              <execution>
+                  <id>bundle-and-repackage</id>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>shade</goal>
+                  </goals>
+                  <configuration>
+                      <createDependencyReducedPom>false</createDependencyReducedPom>
+                      <artifactSet>
+                          <includes>
+                              <include>*:*</include>
+                          </includes>
+                      </artifactSet>
+                      <filters>
+                          <filter>
+                              <artifact>*:*</artifact>
+                              <excludes>
+                                  <exclude>META-INF/*.SF</exclude>
+                                  <exclude>META-INF/*.DSA</exclude>
+                                  <exclude>META-INF/*.RSA</exclude>
+                              </excludes>
+                          </filter>
+                      </filters>
+                      <transformers>
+                          <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                      </transformers>
+                  </configuration>
+              </execution>
+          </executions>
       </plugin>
     </plugins>
   </build>
