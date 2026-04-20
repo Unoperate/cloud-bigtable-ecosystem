@@ -2,19 +2,20 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.google.cloud.teleport.v2</groupId>
-    <artifactId>dynamic-templates</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.google.cloud.aerospike</groupId>
+    <artifactId>aerospike-migration-tools</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>aerospike-backup-to-bigtable</artifactId>
 
   <properties>
-    <aerospike-backup-loader.version>1.0.0-SNAPSHOT</aerospike-backup-loader.version>
-    <moshi.version>1.15.2</moshi.version>
+    <dataflow-templates.version>1.0-SNAPSHOT</dataflow-templates.version>
+    <beam.version>2.65.0</beam.version><!-- Must match DataflowTemplates' beam version! -->
+    <truth.version>1.1.5</truth.version>
   </properties>
 
   <dependencies>
@@ -26,18 +27,18 @@
     <dependency>
       <groupId>com.google.cloud.teleport</groupId>
       <artifactId>it-google-cloud-platform</artifactId>
-      <version>${project.version}</version>
+      <version>${dataflow-templates.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.cloud.teleport.v2</groupId>
       <artifactId>bigtable-common</artifactId>
-      <version>${project.version}</version>
+      <version>${dataflow-templates.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud.aerospike</groupId>
       <artifactId>backup-loader</artifactId>
-      <version>${aerospike-backup-loader.version}</version>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.google.truth</groupId>
@@ -52,7 +53,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
+        <version>${maven-surefire.version}</version>
         <configuration>
           <systemPropertyVariables combine.children="append">
             <!-- TODO: replace with a Google-managed URL. -->
