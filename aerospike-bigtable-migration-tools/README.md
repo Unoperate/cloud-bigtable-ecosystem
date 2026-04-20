@@ -154,7 +154,7 @@ docker run --dns=169.254.169.254 --rm curlimages/curl curl -sH "Metadata-Flavor:
 If you're running outside of it, follow the [official README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
 
 #### Build and stage the template
-Build the container:
+Build the container (note that it might take a very long time):
 ```bash
 docker build . --target compiled -t aerospike-bigtable-migration-tools
 ```
