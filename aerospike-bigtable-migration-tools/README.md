@@ -95,7 +95,7 @@ just test
 ```
 
 Running `dataflow-template`'s integration test (within the [container](#docker-container), see[template's requirements description](#templates-dependencies) for details):
-```
+```bash
 # Note that all the cloud resources must already exist.
 just dataflow-local-it <GCP_REGION> <GCP_PROJECT> <GCS_BUCKET_NAME> <BIGTABLE_INSTANCE_ID>
 ```
