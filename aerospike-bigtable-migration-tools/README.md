@@ -179,16 +179,16 @@ Then within it run:
 # Install template's dependencies into local maven repository.
 just install-dataflow-dependencies /dataflow
 
-mvn package -pl dataflow-template -am -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -DartifactRegistry=$REGISTRY/$IMAGE_NAME
-
-# TODO: check whether we need to extract the jar and so on
+mvn package -pl dataflow-template -am -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName="$BUCKET_NAME" -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -Dimage="$REGISTRY/$IMAGE_NAME"
 ```
 
 #### Run the template
 After executing the steps described, there should be:
-- `$REGISTRY/templates/$IMAGE_NAME` - job manager image
+- `$REGISTRY/$IMAGE_NAME` - job manager image
 - `$REGISTRY/$IMAGE_NAME-worker:$VERSION` - worker image
 - `gs://$BUCKET_NAME/templates/flex/Aerospike_Backup_To_Bigtable` - Dataflow template's descriptor
+
+TODO: check it is up-to-date
 
 To run it:
 - go to https://console.cloud.google.com/dataflow/createjob

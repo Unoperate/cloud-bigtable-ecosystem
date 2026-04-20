@@ -16,6 +16,7 @@
     <dataflow-templates.version>1.0-SNAPSHOT</dataflow-templates.version>
     <beam.version>2.65.0</beam.version><!-- Must match DataflowTemplates' beam version! -->
     <truth.version>1.1.5</truth.version>
+    <maven-jib.version>3.4.0</maven-jib.version>
   </properties>
 
   <dependencies>
@@ -73,5 +74,41 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!-- Indirectly required by templates-maven-plugin. -->
+        <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>${maven-jib.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>templatesStage</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.google.cloud.teleport</groupId>
+            <artifactId>templates-maven-plugin</artifactId>
+            <version>${dataflow-templates.version}</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>stage</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
