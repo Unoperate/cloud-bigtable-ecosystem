@@ -17,13 +17,15 @@ run-backup-loader:
     mvn -Pall clean compile exec:java -Dexec.mainClass=com.google.cloud.aerospike.LoadBackupExample -Dexec.jvmArgs="-Djava.library.path=target/classes:/usr/lib:/usr/local/lib"
 
 dataflow-local-it region project bucket bigtable_instance:
-    mvn verify \
+    BIGTABLE_EMULATOR_HOST="" mvn verify \
         -fae \
         -pl "dataflow-template" \
         -am \
         -Dregion={{ region }} \
         -Dproject={{ project }} \
+        -DprojectId={{ project }} \
         -DbucketName={{ bucket }} \
+        -DartifactBucket={{ bucket }} \
         -DbigtableInstanceId={{ bigtable_instance }} \
         -DdirectRunnerTest=1
 
