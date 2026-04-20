@@ -26,8 +26,6 @@ dataflow-local-it region project bucket bigtable_instance:
         -am \
         -Dregion={{ region }} \
         -Dproject={{ project }} \
-        -DprojectId={{ project }} \
-        -DbucketName={{ bucket }} \
         -DartifactBucket={{ bucket }} \
         -DbigtableInstanceId={{ bigtable_instance }} \
         -DdirectRunnerTest=1
