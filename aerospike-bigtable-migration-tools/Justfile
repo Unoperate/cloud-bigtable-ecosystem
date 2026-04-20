@@ -25,12 +25,6 @@ dataflow-local-it region project bucket bigtable_instance:
         -Dproject={{ project }} \
         -DbucketName={{ bucket }} \
         -DbigtableInstanceId={{ bigtable_instance }} \
-        -Dmdep.analyze.skip \
-        -Dcheckstyle.skip \
-        -Djib.skip \
-        -DskipShade \
-        -DskipUnitTests \
-        -Djacoco.skip=true \
         -DdirectRunnerTest=1
 
 build:
