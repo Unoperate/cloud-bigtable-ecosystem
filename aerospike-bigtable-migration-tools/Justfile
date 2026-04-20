@@ -29,6 +29,7 @@ dataflow-local-it region project bucket bigtable_instance:
         -Dcheckstyle.skip \
         -Djib.skip \
         -DskipShade \
+        -DskipUnitTests \
         -Djacoco.skip=true \
         -DdirectRunnerTest=1
 
