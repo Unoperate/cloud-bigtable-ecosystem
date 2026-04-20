@@ -173,6 +173,7 @@
       <modules>
         <module>adapter</module>
         <module>backup-loader</module>
+        <module>dataflow-template</module>
         <module>replicator</module>
       </modules>
     </profile>
@@ -184,14 +185,6 @@
         <module>backup-loader-example</module>
         <module>dataflow-template</module>
         <module>replicator</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>templatesStage</id>
-      <modules>
-        <module>adapter</module>
-        <module>backup-loader</module>
-        <module>dataflow-template</module>
       </modules>
     </profile>
   </profiles>

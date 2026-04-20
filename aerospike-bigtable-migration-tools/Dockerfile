@@ -110,6 +110,7 @@ COPY adapter adapter
 COPY Justfile Justfile
 COPY backup-loader backup-loader
 COPY replicator replicator
+COPY dataflow-template dataflow-template
 COPY pom.xml pom.xml
 RUN just build
 

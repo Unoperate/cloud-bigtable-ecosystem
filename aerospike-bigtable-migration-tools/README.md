@@ -83,12 +83,15 @@ Building just the backup reader (and its dependencies):
 just run-mvn backup-loader compile
 ```
 
-TODO: running the tests (exclude the template somehow?)
-
 Running the backup loader example (within the [container](#docker-container), see[backup-loader's requirements description](#dependencies) for details):
 ```bash
 just run-emulator & # On the host, within the container there's no `docker`
 just run-backup-loader
+```
+
+Running the tests (excluding the `dataflow-template` integration tests):
+```bash
+just test
 ```
 
 Running `dataflow-template`'s integration test (within the [container](#docker-container), see[template's requirements description](#templates-dependencies) for details):
