@@ -176,11 +176,12 @@ docker run --rm -it -v PATH_TO_DATAFLOW_TEMPLATES_REPO:/dataflow aerospike-migra
 ```
 Then within it run:
 ```bash
-# Install Java packages of `aerospike-bigtable-migration-tools` into local maven repository.
-just install
-# Now do the operations on the Dataflow template.
-cd /dataflow
-mvn package -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -DartifactRegistry=$REGISTRY/$IMAGE_NAME -pl v2/aerospike-backup-to-bigtable -am
+# Install template's dependencies into local maven repository.
+just install-dataflow-dependencies /dataflow
+
+mvn package -pl dataflow-template -am -DskipTests -DprojectId="$PROJECT_ID" -DbucketName=$BUCKET_NAME -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -DartifactRegistry=$REGISTRY/$IMAGE_NAME
+
+# TODO: check whether we need to extract the jar and so on
 ```
 
 #### Run the template
