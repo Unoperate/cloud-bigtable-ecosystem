@@ -64,12 +64,12 @@
           <systemPropertyVariables combine.children="append">
             <!-- TODO: replace with a Google-managed URL. -->
             <sdkContainerImage>TODO:${beam.version}</sdkContainerImage>
-            <!-- TODO: is this needed? -->
-            <beamJavaVersion>${beam.version}</beamJavaVersion>
           </systemPropertyVariables>
           <includes>
             <include>**/*IT.java</include>
           </includes>
+          <parallel>classesAndMethods</parallel>
+          <threadCount>5</threadCount>
         </configuration>
       </plugin>
     </plugins>
