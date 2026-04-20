@@ -163,7 +163,7 @@ Also mind the `--dns` flag described in [Authentication](#authentication) sectio
 
 Start the container with:
 ```bash
-docker run --rm -it aerospike-migration-tools
+docker run --rm -it aerospike-bigtable-migration-tools
 ```
 Then within it run:
 ```bash
