@@ -45,7 +45,7 @@ clean:
     mvn -Pall clean
 
 test case="*":
-    mvn clean test -pl '!:dataflow-template' -Dtest="{{ case }}" -Dsurefire.failIfNoSpecifiedTests=false
+    mvn clean test -pl '!dataflow-template' -Dtest="{{ case }}" -Dsurefire.failIfNoSpecifiedTests=false
 
 format: && clang-format
     mvn -Pall clean spotless:apply
