@@ -103,14 +103,15 @@ ENV LD_LIBRARY_PATH=/usr/local/lib
 # ----------- Stage 2: compiled -----------
 FROM builder AS compiled
 
+WORKDIR /src
+
 # copy the source and build the library
-COPY adapter /src/adapter
-COPY Justfile /src/Justfile
-COPY backup-loader /src/backup-loader
-COPY replicator /src/replicator
-COPY pom.xml /src/pom.xml
-RUN cd /src && \
-    just build
+COPY adapter adapter
+COPY Justfile Justfile
+COPY backup-loader backup-loader
+COPY replicator replicator
+COPY pom.xml pom.xml
+RUN just build
 
 # ----------- Stage 3: dataflow-worker -----------
 FROM gcr.io/cloud-dataflow/v1beta3/beam_java17_sdk:${BEAM_VERSION} AS dataflow-worker

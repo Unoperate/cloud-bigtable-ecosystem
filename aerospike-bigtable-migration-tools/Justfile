@@ -39,10 +39,10 @@ dataflow-stage project bucket image_registry image_name:
         -Dimage="{{ image_name }}/{{ image_name }}"
 
 build:
-    mvn clean compile
+    mvn -Pall clean compile
 
 clean:
-    mvn clean
+    mvn -Pall clean
 
 test case="*":
     mvn clean test -Dtest="{{ case }}" -Dsurefire.failIfNoSpecifiedTests=false
@@ -51,13 +51,7 @@ format: && clang-format
     mvn -Pall clean spotless:apply
 
 pull-dependencies:
-    mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline -DexcludeGroupIds=com.google.cloud.aerospike
-
-package:
-    mvn clean package -Dmaven.test.skip
-
-install:
-    mvn clean install -Dmaven.test.skip
+    mvn -Pall org.apache.maven.plugins:maven-dependency-plugin:3.8.1:go-offline -DexcludeGroupIds=com.google.cloud.aerospike
 
 run-mvn module target:
     mvn -Pall clean "{{ target }}" -pl "{{ module }}" -am
