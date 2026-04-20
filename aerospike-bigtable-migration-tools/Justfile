@@ -27,7 +27,7 @@ dataflow-local-it region project bucket bigtable_instance:
         -DbigtableInstanceId={{ bigtable_instance }} \
         -DdirectRunnerTest=1
 
-dataflow-stage project bucket image_registry image_name:
+dataflow-stage project bucket image_registry:
     mvn package -PtemplatesStage \
         -pl dataflow-template \
         -am \
@@ -36,7 +36,7 @@ dataflow-stage project bucket image_registry image_name:
         -DbucketName="{{ bucket }}" \
         -DstagePrefix="templates" \
         -DtemplateName="AerospikeBackupToBigtable" \
-        -Dimage="{{ image_registry }}/{{ image_name }}"
+        -DartifactRegistry="{{ image_registry }}"
 
 build:
     mvn clean compile

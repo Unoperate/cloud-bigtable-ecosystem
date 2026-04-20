@@ -170,12 +170,12 @@ docker run --rm -it aerospike-bigtable-migration-tools
 ```
 Then within it run:
 ```bash
-just dataflow-stage "$PROJECT_ID" "$BUCKET_NAME" "$REGISTRY" "$IMAGE_NAME"
+just dataflow-stage "$PROJECT_ID" "$BUCKET_NAME" "$REGISTRY"
 ```
 
 #### Run the template
 After executing the steps described, there should be:
-- `$REGISTRY/$IMAGE_NAME` - job manager image
+- `$REGISTRY/templates/aerospike-backup-to-bigtable` - job manager image
 - `$REGISTRY/$IMAGE_NAME-worker:$VERSION` - worker image
 - `gs://$BUCKET_NAME/templates/flex/Aerospike_Backup_To_Bigtable` - Dataflow template's descriptor
 
