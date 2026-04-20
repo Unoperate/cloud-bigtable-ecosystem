@@ -14,7 +14,7 @@
 
   <properties>
     <dataflow-templates.version>1.0-SNAPSHOT</dataflow-templates.version>
-    <beam.version>2.65.0</beam.version><!-- Must match DataflowTemplates' beam version! -->
+    <beam.version>2.65.0</beam.version><!-- Must match DataflowTemplates' Beam version! -->
     <truth.version>1.1.5</truth.version>
     <maven-jib.version>3.4.0</maven-jib.version>
   </properties>

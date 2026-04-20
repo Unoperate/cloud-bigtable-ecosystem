@@ -33,20 +33,6 @@ Implements [`BackupReader`](backup-loader/src/main/java/com/google/cloud/aerospi
 
 Note that it is implemented by using the official [`aerospike-tools-backup`](https://github.com/aerospike/aerospike-tools-backup) library via Java Native Interface.
 
-### Dataflow Template
-Contains a Dataflow Flex Template that imports Aerospike backups from Google Cloud Storage into Cloud Bigtable.
-
-#### Template's dependencies
-Note that the template depends on some classes from [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) that aren't published in any Maven repository.
-We build them on our own.
-
-#### `BackupReader`'s Dependencies
-We're providing [`BackupReader`'s dependencies](#dependencies) with a [custom worker image](https://docs.cloud.google.com/dataflow/docs/guides/build-container-image) built [in a particular way](#build-and-push-the-worker-image).
-
-Note that the integration tests also require this image to be present (or the tests to be run with
-`-DdirectRunnerTest=1` on machine containing all the shared library dependencies) - see `sdkContainerImage` property
-in [pom.xml](pom.xml).
-
 #### Dependencies
 The Java `BackupReader` class requires a compiled native shared library to be present on the host (see [Dockerfile](Dockerfile)'s `dataflow-worker` target for an example how to satisfy this requirement).
 
@@ -57,14 +43,30 @@ All the other modules are pure Java and can be built in any environment with sup
 ### Backup Loader Examples
 Contains runnable examples of BackupReader usage, along with scripts and config files for generating test backups.
 
+### Dataflow Template
+Contains a Dataflow Flex Template that imports Aerospike backups from Google Cloud Storage into Cloud Bigtable.
+
+Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Cloud Bigtable ones.
+
+#### Template's dependencies
+Note that the template depends on some classes from [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) that aren't published in any Maven repository.
+We build (and install them into the local Maven repository) them on our own as you can see in the [Dockerfile](Dockerfile).
+
+#### `BackupReader`'s Dependencies
+We're providing [`BackupReader`'s dependencies](#dependencies) with a [custom worker image](https://docs.cloud.google.com/dataflow/docs/guides/build-container-image) built [in a particular way](#build-and-push-the-worker-image).
+
+Note that the integration tests also require this image to be present (or the tests to be run with
+`-DdirectRunnerTest=1` on machine containing all the shared library dependencies) - see `sdkContainerImage` property
+in [pom.xml](dataflow-template/pom.xml).
+
 ## [Docker container](Dockerfile)
 Provides:
 - All necessary dependencies for building and running the project,
-- Pre-installed tools like `maven`, `gcc`, `/app/bin/asbackup`
+- Pre-installed tools like `maven`, `gcc`, `/app/bin/asbackup`.
 
 It also documents how to build both the project and the dependencies.
 
-## Workflow
+## Development workflow
 [Justfile](./Justfile) is an index of interesting commands and shortcuts for running them.
 
 Note that if you want to execute `mvn` commands directly, you should do so from the top directory.
@@ -80,22 +82,17 @@ Building just the backup reader (and its dependencies):
 just run-mvn backup-loader compile
 ```
 
+TODO: running the tests (exclude the template somehow?)
+
 Running the backup loader example (note that it's only likely to run within the [container](#docker-container) due to [backup-loader's requirements](#dependencies)):
 ```bash
 just run-emulator & # On the host, within the container there's no `docker`
 just run-backup-loader
 ```
 
-Installing `backup-loader` and `adapter` modules to the local Maven repository (so they can be added as dependencies in other locally built projects):
-```bash
-just install
+Running `dataflow-template`'s integration test:
 ```
-
-Running `dataflow-template`'s integration test (for information about exact selection of [DataflowTemplates](https://github.com/GoogleCloudPlatform/DataflowTemplates/) version see [the section about building the template](#build)):
-```
-# Ensure that all the template's dependencies are present.
-just install-dataflow-dependencies <PATH_TO_DATAFLOW_TEMPLATES_REPO>
-# Note that all the resources must already exist.
+# Note that all the cloud resources must already exist.
 just dataflow-local-it <GCP_REGION> <GCP_PROJECT> <GCS_BUCKET_NAME> <BIGTABLE_INSTANCE_ID>
 ```
 
@@ -127,29 +124,24 @@ This section documents how to obtain the binary artifacts needed for the process
 
 ## Dataflow template `AerospikeBackupToBigtable`
 
-<!-- TODO: link to template -->
-[A fork of DataflowTemplates contains `AerospikeBackupToBigtable`](TODO), a Dataflow template that can be used to load data from Aerospike backups into Cloud Bigtable.
-
-Note that it uses `backup-loader` module for reading these files, so it uses `adapter` module for mapping Aerospike values into Cloud Bigtable ones.
-
-### How to use it
-
-#### Build and push the worker image
+### Build and push the worker image
 In this step we build OCI image used by Dataflow worker nodes to run the actual work on.
 
-**CAUTION:** Use the tag matching the `beam.version` property of the root pom.xml from the Dataflow repository!
 ```bash
+# Get the appropriate Beam version
+grep '<beam.version>' dataflow-template/pom.xml
+
 just build-worker-image $REGISTRY/$IMAGE_NAME-worker $VERSION
 docker push $REGISTRY/$IMAGE_NAME-worker:$VERSION
 ```
 
-#### Build and stage the template
+### Build and stage the template
 In this step we build and publish (into buckets and registries configured by the arguments):
 - Uber-jar of the Dataflow template
 - OCI image of Dataflow template's job manager (which coordinates the worker nodes)
 - JSON descriptor of the Dataflow template (it points to the job manager image and contains some metadata such as the template's arguments and their description)
 
-##### Authentication
+#### Authentication
 Note that this action needs to upload data to GCP using Application Default credentials.
 It is also to be run in a Docker container (due to `backup-loader`'s dependencies), so you need to ensure that the process in the container is authenticated.
 
@@ -160,26 +152,21 @@ docker run --dns=169.254.169.254 --rm curlimages/curl curl -sH "Metadata-Flavor:
 
 If you're running outside of it, follow the [official README](https://docs.cloud.google.com/docs/authentication/provide-credentials-adc).
 
-##### Build
+#### Build
 Build the container:
 ```bash
 docker build . --target compiled -t aerospike-bigtable-migration-tools
 ```
 
-Note that the build process of Dataflow pulls a large number of dependencies, so you might want to add flag such as `-v ./.m2:/root/.m2` to avoid redownloading them all if you end up needing to build it more than once.
-
 Also mind the `--dns` flag described in [Authentication](#authentication) section.
 
-Clone the `DataflowTemplates` repo at commit `47b6f87d3556c1bf690f5a6aa58c144d3049122b` and start the container with:
+Start the container with:
 ```bash
-docker run --rm -it -v PATH_TO_DATAFLOW_TEMPLATES_REPO:/dataflow aerospike-migration-tools
+docker run --rm -it aerospike-migration-tools
 ```
 Then within it run:
 ```bash
-# Install template's dependencies into local maven repository.
-just install-dataflow-dependencies /dataflow
-
-mvn package -pl dataflow-template -am -PtemplatesStage -DskipTests -DprojectId="$PROJECT_ID" -DbucketName="$BUCKET_NAME" -DstagePrefix="templates" -DtemplateName="AerospikeBackupToBigtable" -Dimage="$REGISTRY/$IMAGE_NAME"
+just dataflow-stage "$PROJECT_ID" "$BUCKET_NAME" "$REGISTRY" "$IMAGE_NAME"
 ```
 
 #### Run the template

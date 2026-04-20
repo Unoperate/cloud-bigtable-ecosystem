@@ -61,9 +61,9 @@ RUN cd aws-sdk-cpp && \
         -DENABLE_UNITY_BUILD=ON && \
     make -j$(nproc) -C build && make install -C build
 
-# Clone and install into local maven the dependencies of the Dataflow template
-RUN git clone https://github.com/GoogleCloudPlatform/DataflowTemplates /dataflow --depth 1 --branch 2025-05-27-00_RC00
-RUN cd DataflowTemplates && mvn install -am -pl v2/bigtable-common,plugins/templates-maven-plugin,it/google-cloud-platform -DskipTests
+# Clone and install into local maven repository the dependencies of the Dataflow template
+RUN git clone https://github.com/GoogleCloudPlatform/DataflowTemplates dataflow --depth 1 --branch 2025-05-27-00_RC00
+RUN cd dataflow && mvn install -am -pl v2/bigtable-common,plugins/templates-maven-plugin,it/google-cloud-platform -DskipTests
 
 # Clone and build Aerospike backup tools
 RUN git clone https://github.com/aerospike/aerospike-tools-backup.git /app --branch 4.5.1 --depth 1 --recurse-submodules -j"$(nproc)" --shallow-submodules
