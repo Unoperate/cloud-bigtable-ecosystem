@@ -57,7 +57,7 @@ The template should be built in the Docker container of the project since it dep
 We're providing [`BackupReader`'s dependencies](#dependencies) with a [custom worker image](https://docs.cloud.google.com/dataflow/docs/guides/build-container-image) built [in a particular way](#build-and-push-the-worker-image).
 
 Note that the integration tests also require this image to be present (or the tests to be run with
-`-DdirectRunnerTest=1` on machine containing all the shared library dependencies) - see `sdkContainerImage` property
+`-DdirectRunnerTest=1` (see `just`'s `dataflow-local-it` recipe for details) on machine containing all the shared library dependencies) - see `sdkContainerImage` property
 in [pom.xml](dataflow-template/pom.xml).
 
 ## [Docker container](Dockerfile)
@@ -139,7 +139,7 @@ just build-worker-image $REGISTRY/$IMAGE_NAME-worker $VERSION
 docker push $REGISTRY/$IMAGE_NAME-worker:$VERSION
 ```
 
-### Build and stage the template
+### Dataflow
 In this step we build and publish (into buckets and registries configured by the arguments):
 - Uber-jar of the Dataflow template
 - OCI image of Dataflow template's job manager (which coordinates the worker nodes)
@@ -162,9 +162,7 @@ Build the container (note that it might take a very long time):
 docker build . --target compiled -t aerospike-bigtable-migration-tools
 ```
 
-Also mind the `--dns` flag described in [Authentication](#authentication) section.
-
-Start the container with:
+Start the container with (mind the `--dns` flag described in [Authentication](#authentication) section):
 ```bash
 docker run --rm -it aerospike-bigtable-migration-tools
 ```
